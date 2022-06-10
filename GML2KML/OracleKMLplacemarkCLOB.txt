@@ -1,0 +1,1 @@
+<Point><extrude>0</extrude><tessellate>0</tessellate><altitudeMode>relativeToGround</altitudeMode><coordinates>23.611235790441,37.9616905936337 </coordinates></Point>

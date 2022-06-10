@@ -1,0 +1,19 @@
+Prompt Table ATTIKI_FACTTBL;
+CREATE TABLE ATTIKI_FACTTBL
+(
+  TIME_ID            INTEGER                    NOT NULL,
+  SPACE_ID           INTEGER                    NOT NULL,
+  TRAJECTORIES       INTEGER,
+  USERS              INTEGER,
+  DISTANCE_TRAVELED  NUMBER(22,2),
+  TIME_DURATION      INTEGER,
+  SPEED              INTEGER,
+  ACCELERATION       INTEGER,
+  CROSSX             NUMBER,
+  CROSSY             NUMBER,
+  CROSST             NUMBER
+)
+TABLESPACE USERS
+/
+
+

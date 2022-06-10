@@ -1,0 +1,19 @@
+;;; 
+Export: Release 11.2.0.1.0 - Production on Thu Apr 4 19:26:38 2013
+
+Copyright (c) 1982, 2009, Oracle and/or its affiliates.  All rights reserved.
+;;; 
+Connected to: Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - Production
+With the Partitioning, OLAP, Data Mining and Real Application Testing options
+Starting "HERMES"."SYS_EXPORT_TABLE_02":  hermes/******** directory=IO dumpfile=imis_3days_stops_found.dmp tables=imis_3days_stops_found 
+Estimate in progress using BLOCKS method...
+Processing object type TABLE_EXPORT/TABLE/TABLE_DATA
+Total estimation using BLOCKS method: 13 MB
+Processing object type TABLE_EXPORT/TABLE/TABLE
+Processing object type TABLE_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+. . exported "HERMES"."IMIS_3DAYS_STOPS_FOUND"           10.98 MB  198624 rows
+Master table "HERMES"."SYS_EXPORT_TABLE_02" successfully loaded/unloaded
+******************************************************************************
+Dump file set for HERMES.SYS_EXPORT_TABLE_02 is:
+  C:\USERS\STYLIANOS\DOCUMENTS\NETBEANSPROJECTS\HERMES-GUI-ORACLE\HERMESORACLE\HERMES\IO\IMIS_3DAYS_STOPS_FOUND.DMP
+Job "HERMES"."SYS_EXPORT_TABLE_02" successfully completed at 19:35:02

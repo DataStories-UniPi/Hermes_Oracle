@@ -1,0 +1,92 @@
+Prompt Java Source STOPFINDER_DISTANCE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_DISTANCE as package stopfinder;
+
+public class Distance {
+
+	// Mean radius in KM
+	final double EARTH_RADIUS = 6371.0;
+
+	private static Distance distance = null;
+	private Distance() {
+
+	}
+
+	public static Distance getInstance() {
+		if(distance == null) {
+			distance = new Distance();
+		}
+		return distance;
+	}
+
+	/**
+	 * Computes the distance of 2 geographic points
+	 * @param old
+	 * @param newP
+	 * @return
+	 */
+	public double computeDistance(LatLong old, LatLong newP) {
+		return GreatCircleDistance(old, newP);
+	}
+
+	/**
+	 * Computes the distance of 2 cartesian points
+	 * @param old
+	 * @param newP
+	 * @return
+	 */
+	public double computeDistance(CartesianPoint old, CartesianPoint newP) {
+		return EuclideanDistance(old, newP);
+	}
+
+
+
+	/** Method to compute Great Circle distance between
+	  * two points. Please note that this algorithm
+	  * assumes the Earth to be a perfect sphere, whereas
+	  * in fact the equatorial radius is about 30Km
+	  * greater than the Polar.
+	  *
+	  * @param old other point to compute distance to
+	  * @return The distance in metre
+	  */
+
+	private double  GreatCircleDistance(LatLong old, LatLong newP ) {
+
+		double p1 = Math.cos(newP.getLatitudeRadian())*Math.cos(newP.getLongitudeRadian())
+	              *Math.cos(old.getLatitudeRadian())*Math.cos(old.getLongitudeRadian());
+
+		double p2 = Math.cos(newP.getLatitudeRadian())*Math.sin(newP.getLongitudeRadian())
+	              *Math.cos(old.getLatitudeRadian())*Math.sin(old.getLongitudeRadian());
+
+		double p3 = Math.sin(newP.getLatitudeRadian())*Math.sin(old.getLatitudeRadian());
+
+		return((Math.acos(p1+p2+p3)*EARTH_RADIUS) * 1000);
+	}
+
+	/**
+	 * Computes the distance of 2 points in a cartesian system
+	 * by using the euclidean distance
+	 * @param old
+	 * @param newP
+	 * @return
+	 */
+	private double EuclideanDistance(CartesianPoint old, CartesianPoint newP) {
+
+		if (old == null)
+			throw new NullPointerException("old");
+		if (newP == null)
+			throw new NullPointerException("newP");
+		double sum = 0.0;
+
+		sum = Math.pow((old.getX() - newP.getX()),2) + Math.pow((old.getY() - newP.getY()),2);
+
+		return Math.sqrt(sum);
+
+	}
+
+
+
+}
+/
+
+

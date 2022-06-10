@@ -1,0 +1,95 @@
+Prompt Java Source STOPFINDER_FEATUREVECTOR;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_FEATUREVECTOR as package stopfinder;
+/**
+ * Mutable feature vector consisting of type <code>double</code>.
+ */
+public class FeatureVector {
+
+
+	private double[] values;
+	private int id;
+
+	private Spatial spatial = null;
+	private long time;
+
+
+
+	/**
+	 * Constructs a feature vector with the specified number of dimensions.
+	 *
+	 * @param dim
+	 *            the dimensionality of the new VectorOptics
+	 */
+	public FeatureVector(int dim, int id) {
+		values = new double[dim];
+		this.id = id;
+	}
+
+	/**
+	 * Returns the number of dimensions of this FeatureVector.
+	 *
+	 * @return the dimensionality of this FeatureVector
+	 */
+	public int dim() {
+		return values.length;
+	}
+
+	/**
+	 * Sets the specified entry to the specified value.
+	 *
+	 * @param index
+	 *            the index of the entry to set
+	 * @param value
+	 *            the value to set the entry to
+	 */
+	public void set(int index, double value) {
+		values[index] = value;
+	}
+
+	/**
+	 * Returns the value of the specified entry.
+	 *
+	 * @param index
+	 *            the index of the entry to return
+	 * @return the value of the specified entry
+	 */
+	public double getVectorDimension(int index) {
+		return values[index];
+	}
+
+
+	public void addValue(int number, double value) {
+		values[number] = value;
+	}
+
+
+	public double distanceTo(FeatureVector vector) {
+		return Math.abs(spatial.distanceTo(vector.getSpatial()));
+
+	}
+
+	public void setSpatial(String cartesian) {
+		if(cartesian.equals("yes")) {
+			//it's a cartesian point
+			spatial = new CartesianPoint(this.values[0],this.values[1]);
+		}
+		else {
+			//it's a geographical point
+			spatial = new LatLong(this.values[0],this.values[1]);
+		}
+	}
+
+
+	public Spatial getSpatial() {
+		return spatial;
+	}
+
+
+
+
+
+
+}
+/
+
+

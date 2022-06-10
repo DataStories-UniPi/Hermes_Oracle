@@ -1,0 +1,1 @@
+connect HERMES/HERMES@&1spool hermes_short.mylog;@CreateDB\allobjects\HERMES_Build_All.sqlspool off;exit;

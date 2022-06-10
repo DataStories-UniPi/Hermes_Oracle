@@ -1,0 +1,526 @@
+Prompt Java Source STOPFINDER_OPTICSALGORITHM;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_OPTICSALGORITHM as package stopfinder;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.TreeSet;
+
+import stopfinder.AngelRate;
+import stopfinder.DataPoint;
+import stopfinder.FeatureVector;
+
+/**
+ * A class of the implementation of the OPTICS algorithm. OPTICS is a
+ * density-based hierarchical clustering algorithm.
+ */
+public class OpticsAlgorithm {
+
+	private final double eps;
+
+	private final long minTime;
+
+	private Set<Integer> processedID;
+
+	private LinkedList<DataPoint> orderdlist;
+
+	private LinkedList<DataPoint> seeds;
+
+	private LinkedList<DataPoint> set;
+	
+
+	/**
+	 * Constructor for the class
+	 * 
+	 * @param eps
+	 *            maximum radius
+	 * @param minium
+	 *            number of points for a region to be regarded as dense
+	 * @param set
+	 *            contains the partition of slices
+	 */
+	public OpticsAlgorithm(HashMap<String, String> runtimeVariables,
+			LinkedList<DataPoint> set) {
+		this.minTime = Integer.parseInt(runtimeVariables.get("minTime"));
+		this.eps = Double.parseDouble(runtimeVariables.get("eps"));
+		this.set = set;
+	}
+	
+
+	/**
+	 * This method init the different lists for the optics algorithm and starts
+	 * the optics algorithm.
+	 */
+	public void run() {
+		processedID = new TreeSet<Integer>(); // init set for proccesed
+		// datapoints
+		orderdlist = new LinkedList<DataPoint>(); // init outputliste of the
+		// optics algorithm
+		seeds = new LinkedList<DataPoint>(); // init seed list for the seed
+		// datapoints
+		runOpticsAlgorithm(); // run optics algorithm
+	}
+
+	/** This mehtod starts the run through the optics algorithm */
+	private void runOpticsAlgorithm() {
+		for(DataPoint seed : set) {
+			if (!processedID.contains(seed.getID())) {
+				expandClusterOrder(set, seed, eps, minTime);
+			}
+		}
+		
+		//compareNeighbours(listInt1, listInt2);
+		System.out.println("end");
+		
+		
+	}
+
+	/**
+	 * This method extract the optics Cluster and save the datapoint into the
+	 * optics output list
+	 * 
+	 * @param temp
+	 *            list of all datapoints
+	 * @param seed
+	 *            current datapoint to process
+	 * @param eps
+	 *            neighborhoodradius
+	 * @param minpts
+	 *            number of at least datapoint which marks a potential density
+	 *            region
+	 */
+	private void expandClusterOrder(LinkedList<DataPoint> temp, DataPoint seed,
+			double eps, long minTime) {
+
+		NeighborList neighbor =  null;
+		
+		//neighbor = findNeighborsLinearDistance(temp, seed, eps);
+		neighbor = findNeighbors(temp, seed, eps); 
+		
+		processedID.add(seed.getID()); // set current datapoint as processed
+		//seed.setReachability(-1.0);
+		if (neighbor.time() > minTime) // definition core distance
+			seed.setCoreDistance(neighbor.getCoreDistance(minTime));
+			//seed.setCoreDistance(neighbor.get(minpts - 1).getDistance());
+		seed.setReachability(seed.getCoreDistance());
+
+		orderdlist.add(seed); // add current datapoint into optics output list
+
+		if (seed.getCoreDistance() != -1.0) {
+			seeds = update(neighbor, seed); // update add neighborhood
+			// datapoints into seed list
+
+			while (seeds.size() != 0) {
+
+				DataPoint current = seeds.poll(); // remove seed datapoint
+				// with the smallest
+				// reachabiltiy distance
+				// and mark the datapoint as the current datapoint
+				
+				//neighbor = findNeighborsLinearDistance(temp, current, eps);
+				neighbor = findNeighbors(temp, current, eps);
+				
+				processedID.add(current.getID()); // set current datapoint as
+				// processed
+
+				if (neighbor.time() > minTime) {
+					// definition of core distance
+					//seed.setCoreDistance(neighbor.getCoreDistance(minTime));
+					
+					//core distance
+					double tempCoreDistance = neighbor.getCoreDistance(minTime);
+					
+					//Put here the determine method for the angelRate,
+					//double angleRate = neighbor.computeAngleRate(minTime);
+					
+					//TODO think about a good influence of angleRate into coreDistance 
+					tempCoreDistance = tempCoreDistance*1; //angleRate;
+					
+					//tempCoreDistance = tempCoreDistance + tempCoreDistance*angleRate;
+				
+					
+					current.setCoreDistance(tempCoreDistance);
+				}
+
+					
+				orderdlist.add(current); // add current datapoint into optics
+				// output list
+
+				if (current.getCoreDistance() != -1.0) {
+					seeds = update(neighbor, current);
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method finds the neighborhood datapoint form the current datapoint
+	 * 
+	 * @param temp
+	 *            list of all datapoint
+	 * @param current
+	 *            current datapoint
+	 * @param eps
+	 *            neichborhood radius
+	 * @return list of neigbors of the current datapoint
+	 */
+	private NeighborList findNeighborsLinearDistance(LinkedList<DataPoint> temp,
+			DataPoint current, double eps) {
+
+		NeighborList neighborhood = new NeighborList(current, true);
+
+		for (DataPoint candidate : temp) {
+
+			if (current.getID().intValue() != candidate.getID().intValue()) {
+
+				double distance = current.getVector().distanceTo(
+						candidate.getVector());
+
+				if (distance <= eps) {
+					candidate.setDistance(distance); // calculate distance
+					// bestween both
+					// datapoints
+					neighborhood.add(candidate); // mark datapoint as
+					// neighborhood datapoint
+				}
+			}
+		}
+		return sortNeighborhoodList(neighborhood); // sort the neighborhood
+		// datapoints
+	}
+	
+	
+	
+	
+	/**
+	 * Trajectory Distance
+	 * This method finds the neighborhood datapoint form the current datapoint based on eps
+	 * 
+	 * @param temp
+	 *            list of all datapoint
+	 * @param current
+	 *            current datapoint
+	 * @param eps
+	 *            neichborhood radius
+	 * @return list of neigbors of the current datapoint
+	 */
+	private NeighborList findNeighbors(LinkedList<DataPoint> temp,
+			DataPoint current, double eps) {
+		
+		NeighborList neighborhood = new NeighborList(current,false);
+		int posCurrent = temp.indexOf(current);
+		double left = 0;
+		double right = 0;
+		boolean stopLeft = false;
+		boolean stopRight = false;
+		int posLeft = posCurrent;
+		int posRight = posCurrent;
+		while(true) {
+			posLeft--;
+			posRight++;
+			if(posLeft >= 0) {
+				left = left+Math.abs(temp.get(posLeft+1).getVector().distanceTo(temp.get(posLeft).getVector()));
+			}
+			else {
+				stopLeft = true;
+			}
+			if(posRight < temp.size()) {
+				right = right+Math.abs(temp.get(posRight-1).getVector().distanceTo(temp.get(posRight).getVector()));
+			}
+			else {
+				stopRight = true;
+			}
+			
+			
+			
+			if(left <= eps && stopLeft == false) {
+				neighborhood.add(temp.get(posLeft));
+			}
+			else {
+				stopLeft = true;
+				if(stopRight == true) break;
+			}
+			
+			if(right <= eps && stopRight == false) {
+				neighborhood.add(temp.get(posRight));
+			}
+			else {
+				stopRight = true;
+				if(stopLeft == true) break;
+			}
+			
+		}
+		
+		return sortNeighborhoodList(neighborhood);
+	}
+	
+	
+
+	/**
+	 * This method add the neighborhood datapoints of the current datapoint into
+	 * the seed list
+	 * 
+	 * @param neighbor
+	 *            neighborhood of the current datapoint
+	 * @param current
+	 * @return the new seed list
+	 */
+	private LinkedList<DataPoint> update(LinkedList<DataPoint> neighbor,
+			DataPoint current) {
+
+		double c_dist = current.getCoreDistance();
+
+		for (DataPoint dataPoint : neighbor) { // run through all neighborhood
+			// datapoints of the current
+
+			if (!processedID.contains(dataPoint.getID())) { // check if
+				// neighborhhod
+				// datapoint has already
+				// processed
+
+				//double new_r_dist = Math.max(c_dist, current.getVector()
+						//.distanceTo(dataPoint.getVector()));
+				
+				
+				//Trajectory Distance, the reachability is computed
+				double new_r_dist = Math.max(c_dist, computeTrajectoryDistance(current, dataPoint, neighbor));
+
+				if (dataPoint.getReachability() == -1.0) { // add neighborhood
+					// datapoint into
+					// seed list and
+					// set reachability distance
+					dataPoint.setReachability(new_r_dist);
+					seeds.add(dataPoint);
+				}
+
+				else {
+					if (new_r_dist < dataPoint.getReachability()) {
+						dataPoint.setReachability(new_r_dist);
+						seeds.remove(dataPoint);
+						seeds.add(dataPoint);
+					}
+				}
+			}
+		}
+		return sortSeedList(seeds); // sort seed list
+	}
+	
+	
+	/*
+	 * Computes the trajectroy distance of dp1 and dp2, it adds the distance values of 
+	 * all point that are temporal between dp1 and dp2
+	 */
+	private double computeTrajectoryDistance(DataPoint dp1, DataPoint dp2, LinkedList<DataPoint> neighbor) {
+		double distance = 0;
+		
+		if(dp1.getID().intValue() < dp2.getID().intValue()) {
+			DataPoint formerPoint = dp1;
+			for (Iterator it = neighbor.iterator(); it.hasNext();) {
+				DataPoint next = (DataPoint) it.next();
+				if(next.getID().intValue()<dp1.getID().intValue()) {
+					//Do nothing
+				}
+				else {
+					if(next.getID().intValue() == dp2.getID().intValue()) {
+						distance = distance + next.getVector().distanceTo(formerPoint.getVector());
+						return distance;
+					}
+					else {
+						distance = distance + next.getVector().distanceTo(formerPoint.getVector());
+						formerPoint = next;
+					}
+				}
+				
+			}
+		}
+		else {
+			DataPoint formerPoint = neighbor.get(0);
+			for (Iterator it = neighbor.iterator(); it.hasNext();) {
+				DataPoint next = (DataPoint) it.next();
+				if(next.getID().intValue() > dp1.getID().intValue()) {
+					distance = distance + next.getVector().distanceTo(dp1.getVector());
+					return distance;
+				}
+				else {
+					distance = distance + next.getVector().distanceTo(formerPoint.getVector());
+					formerPoint = next;
+				}
+			}
+		}
+		
+		
+		return distance;
+	}
+
+	/**
+	 * This method sorts the neighborhood datapoints list.
+	 * 
+	 * @param sort
+	 *            neighborhood list
+	 * @return sorted neighborhood list
+	 */
+	private NeighborList sortNeighborhoodList(
+			NeighborList sort) {
+
+		Collections.sort(sort, new Comparator<DataPoint>() {
+			public int compare(DataPoint o1, DataPoint o2) {
+				//double time1 = o1.getTime();
+				//double time2 = o2.getTime();
+				long time1 = o1.getTime();
+				long time2 = o2.getTime();
+				if (time1 < time2) {
+					return -1;
+				} else if (time1 == time2) {
+					return 0;
+				} else {
+					return 1;
+				}
+			}
+		});
+		
+		
+		
+		return sort;
+	}
+
+	/**
+	 * This method sorts the seed list
+	 * 
+	 * @param sort
+	 *            seed list
+	 * @return sorted seed list
+	 */
+	private LinkedList<DataPoint> sortSeedList(LinkedList<DataPoint> sort) {
+
+		Collections.sort(sort, new Comparator<DataPoint>() {
+			public int compare(DataPoint o1, DataPoint o2) {
+				double dist1 = o1.getReachability();
+				double dist2 = o2.getReachability();
+				if (dist1 < dist2) {
+					return -1;
+				} else if (dist1 == dist2) {
+					return 0;
+				} else {
+					return 1;
+				}
+			}
+		});
+		return sort;
+	}
+
+	
+	
+	
+	
+	
+	/**
+	 * The method returns the orderd list of the optics algorithm.
+	 * 
+	 * @return orderd linked list of the optics algorithm
+	 */
+	public LinkedList<DataPoint> getOrderdlist() {
+		return this.orderdlist;
+	}
+	
+	
+	public void writeOrderInFile(HashMap<String, String> runtimeVariables) {
+		String home = System.getProperty("user.dir");
+		String delimiter = " ";
+		Integer dimension = Integer.parseInt(runtimeVariables.get("numberColumns"));
+		String fileName = runtimeVariables.get("orderedList");
+		String str = home+fileName;
+        File filetmp = new File(runtimeVariables.get("dataset"));
+        File file = new File(filetmp.getParent()+fileName);
+		//File file = new File(home+fileName);
+	    FileOutputStream fos = null;
+	    BufferedOutputStream bos = null;
+	    DataOutputStream dos = null;
+	    try {
+	    	fos = new FileOutputStream(file);
+	    	bos = new BufferedOutputStream(fos);
+	        dos = new DataOutputStream(bos);
+	        
+	        //dos.writeBytes("test");
+	        
+	        for (int i = 0; i < orderdlist.size(); i++) {
+	        	StringBuffer stBuffer = new StringBuffer();
+	        	stBuffer.append(i);
+				stBuffer.append(delimiter+orderdlist.get(i).getReachability()+delimiter+orderdlist.get(i).getID().intValue()
+						+delimiter+orderdlist.get(i).getVector().getSpatial().getX()
+						+delimiter+orderdlist.get(i).getVector().getSpatial().getY()
+						+delimiter+orderdlist.get(i).getTime());
+	        	stBuffer.append("\r\n");
+				dos.writeBytes(stBuffer.toString());
+			}
+	        
+	        dos.close();
+	        bos.close();
+	        fos.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+		
+	}
+		
+	
+	public void readOrderdList(HashMap<String, String> runtimeVariables, LinkedList<DataPoint> set) {
+		String home = System.getProperty("user.dir");
+		orderdlist = new LinkedList<DataPoint>();
+		String fileName = runtimeVariables.get("orderedList");
+		String str = home+fileName;
+        File filetmp = new File(runtimeVariables.get("dataset"));
+        File file = new File(filetmp.getParent()+fileName);
+		//File file = new File(home+fileName);
+		String delimiter = " ";
+	    FileInputStream fis = null;
+	    BufferedInputStream bis = null;
+	    DataInputStream dis = null;
+	    DataPoint newPoint;
+	    
+	    
+	    String[] res;
+	    String line;
+	    try {
+	    	fis = new FileInputStream(file);
+	    	bis = new BufferedInputStream(fis);
+	        dis = new DataInputStream(bis);
+	        
+	        int j = 0;
+	        while (dis.available() != 0) {
+	        	j++;
+	        	line  = dis.readLine();
+	        	res = line.split(delimiter);
+	        	newPoint = set.get(j-1);
+	        	newPoint.setReachability(new Double(res[1]).doubleValue());
+	        	orderdlist.add(newPoint);
+	           }
+	        
+	        
+		} catch (FileNotFoundException e) {
+			System.out.println("File Not Found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+		
+	}
+	
+}
+/
+
+

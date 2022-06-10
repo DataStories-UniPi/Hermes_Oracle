@@ -1,0 +1,27 @@
+Prompt Table ATTIKI_REPORTER_TABLE2;
+CREATE TABLE ATTIKI_REPORTER_TABLE2
+(
+  TIME               NUMBER(30),
+  STOPEPISODEID      NUMBER(30),
+  ID                 NUMBER(30),
+  REPNUM             NUMBER(30),
+  OBJCLASS           VARCHAR2(30 CHAR),
+  STOPDATE           VARCHAR2(50 CHAR),
+  EDGEID             NUMBER(30),
+  X                  NUMBER(30),
+  Y                  NUMBER(30),
+  SPEED              NUMBER(30),
+  DONEDIST           NUMBER(30),
+  NEXTNODEID         NUMBER(30),
+  NEXTNODEX          NUMBER(30),
+  NEXTNODEY          NUMBER(30),
+  REPORTPROBABILITY  NUMBER(30),
+  STOPNUM            NUMBER(30),
+  REPORTER_TAG       VARCHAR2(30 CHAR),
+  EPISODE_TAG        VARCHAR2(30 BYTE),
+  ACTIVITY_TAG       VARCHAR2(30 BYTE)
+)
+TABLESPACE USERS
+/
+
+

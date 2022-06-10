@@ -1,0 +1,43 @@
+Prompt drop Java Source TEST;
+DROP JAVA SOURCE TEST
+/
+
+Prompt Java Source TEST;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED TEST as import interfaces.Spatial;
+public class Test implements Spatial{
+
+private static double x;
+
+public Test(){
+	x=0.9;
+    
+}
+public static double x() {
+        return 58;
+    }
+    
+public double distanceTo(Spatial newP) {
+        return 0.5;
+    }
+    
+public double getX() {
+        return 8;
+    }
+
+    public void setX(double x) {
+        ;
+    }
+
+    public double getY() {
+        return 9;
+    }
+
+    public void setY(double y) {
+        
+    }    
+}
+/
+
+SHOW ERRORS;
+
+

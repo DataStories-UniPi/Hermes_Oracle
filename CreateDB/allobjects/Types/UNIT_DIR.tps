@@ -1,0 +1,10 @@
+Prompt Type UNIT_DIR;
+CREATE OR REPLACE TYPE UNIT_DIR AS OBJECT (
+
+dir_geom GEOM_SET,
+dir_id NUMBER
+
+);
+/
+
+

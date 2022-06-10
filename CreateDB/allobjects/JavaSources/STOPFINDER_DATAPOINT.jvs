@@ -1,0 +1,78 @@
+Prompt Java Source STOPFINDER_DATAPOINT;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_DATAPOINT as package stopfinder;
+
+public class DataPoint {
+
+	private Integer ID;
+	private double distance, reachability, coredist; // parameter for the
+	// optics algorithm
+
+	//private double time;
+	private long time;
+	private FeatureVector fc;
+	private int cluster;
+
+
+	/**
+	 * Constructor
+	 *
+	 * @param 	id Id of the dataPoint
+	 * 			fc featureCector which represents a row
+	 * 			posTime the column number for the time
+	 */
+	public DataPoint(int id, FeatureVector fc, int posTime, int posCluster) {
+		this.ID = id;
+		distance = -1.0;
+		reachability = -1.0;
+		coredist = -1.0;
+		this.fc = fc;
+		//time = fc.getVectorDimension(posTime);
+		time = (long) fc.getVectorDimension(posTime);
+		//this.cluster = (int) fc.getVectorDimension(posCluster);
+	}
+
+	public Integer getID() {
+		return ID;
+	}
+
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
+	}
+
+	public double getReachability() {
+		return reachability;
+	}
+
+	public void setReachability(double reachability) {
+		this.reachability = reachability;
+	}
+
+	public double getCoreDistance() {
+		return coredist;
+	}
+
+
+	public void setCoreDistance(double coredist) {
+		this.coredist = coredist;
+	}
+
+	public FeatureVector getVector() {
+		return fc;
+	}
+
+	//public double getTime() {
+	public long getTime() {
+		return time;
+	}
+
+	public int getCluster() {
+		return cluster;
+	}
+}
+/
+
+

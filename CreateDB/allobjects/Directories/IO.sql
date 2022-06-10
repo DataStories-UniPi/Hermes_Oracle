@@ -1,0 +1,7 @@
+Prompt Directory IO;
+CREATE OR REPLACE DIRECTORY 
+IO AS 
+'C:\HERMES\IO'
+/
+
+

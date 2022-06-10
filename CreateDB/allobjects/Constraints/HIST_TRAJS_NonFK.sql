@@ -1,0 +1,6 @@
+Prompt Non-Foreign Key Constraints on Table HIST_TRAJS;
+ALTER TABLE HIST_TRAJS ADD (
+  CONSTRAINT HIST_TRAJS_PK
+ PRIMARY KEY
+ (USER_ID, ID, TRAJ_ID))
+/

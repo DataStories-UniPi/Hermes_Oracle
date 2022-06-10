@@ -1,0 +1,8 @@
+Prompt Type SP_POS;
+CREATE OR REPLACE TYPE sp_pos IS OBJECT(
+    x NUMBER,
+    y NUMBER
+)NOT FINAL;
+/
+
+

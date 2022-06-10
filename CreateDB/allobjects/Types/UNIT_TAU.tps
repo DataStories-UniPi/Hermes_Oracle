@@ -1,0 +1,10 @@
+Prompt Type UNIT_TAU;
+CREATE OR REPLACE TYPE UNIT_TAU AS OBJECT (
+
+tau_geom GEOM_SET,
+tau_id NUMBER
+
+);
+/
+
+

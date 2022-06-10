@@ -1,0 +1,7 @@
+Prompt Type TBTREENODEENTRY;
+CREATE OR REPLACE TYPE tbTreeNodeEntry AS OBJECT(
+Ptr Integer,
+MBB tbMBB);
+/
+
+

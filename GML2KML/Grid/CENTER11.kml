@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Placemark>
+	<name>GEOGRAPHYID=32155</name>
+	<description> </description>
+	<gx:balloonVisibility>1</gx:balloonVisibility>
+	<Point>
+		<coordinates>9.20945403550985,45.3922511810651 </coordinates>
+
+	</Point>
+</Placemark>
+</kml>

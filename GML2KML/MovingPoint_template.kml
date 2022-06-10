@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+  <Document xmlns="">
+    <Folder>
+      <name>Hermes</name>
+      <Style id="blueLine">
+        <LineStyle>
+          <color>ffff0000</color>
+          <width>3</width>
+        </LineStyle>
+      </Style>
+  XXXX
+</Folder>
+  </Document>
+</kml>

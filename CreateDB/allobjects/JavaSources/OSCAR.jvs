@@ -1,0 +1,18 @@
+Prompt drop Java Source OSCAR;
+DROP JAVA SOURCE OSCAR
+/
+
+Prompt Java Source OSCAR;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED OSCAR as public class Oscar
+{
+  // return a quotation from Oscar Wilde
+  public static String quote()
+  {
+    return "I can resist everything except temptation.";
+  }
+}
+/
+
+SHOW ERRORS;
+
+

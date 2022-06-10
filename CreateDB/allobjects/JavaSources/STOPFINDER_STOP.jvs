@@ -1,0 +1,20 @@
+Prompt Java Source STOPFINDER_STOP;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_STOP as package stopfinder;
+
+public class Stop extends Entity{
+
+
+	private boolean known;
+
+	public Stop(int id) {
+		super(id);
+		super.isStop(true);
+
+	}
+
+
+
+}
+/
+
+

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml>
+<Document>
+	<name>path.kml</name>
+	<Style id="transPurpleLineGreenPoly">
+		<LineStyle>
+			<color>7fff00ff</color>
+			<width>4</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>7f00ff00</color>
+		</PolyStyle>
+	</Style>
+	<Placemark>
+		<name>Absolute</name>
+		<description>Transparent purple line</description>
+		<LookAt>
+			<longitude>9.12675149475836</longitude>
+			<latitude>45.3707310307115 </latitude>
+			<altitude></altitude>
+			<range>30000</range>
+			<tilt>44.60763714063257</tilt>
+			<heading></heading>
+		</LookAt>
+		<styleUrl>#transPurpleLineGreenPoly</styleUrl>
+		<LineString>
+			<tessellate>1</tessellate>
+			<altitudeMode>relativeToGround</altitudeMode>
+			XXX
+		</LineString>
+	</Placemark>
+</Document>
+</kml>

@@ -1,0 +1,368 @@
+Prompt Java Source STOPFINDER_NEIGHBORLIST;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_NEIGHBORLIST as package stopfinder;
+
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.LinkedList;
+
+import stopfinder.CartesianPoint;
+import stopfinder.DataPoint;
+import stopfinder.Line;
+
+public class NeighborList extends LinkedList<DataPoint>{
+	
+	
+	//private double startTime = 0; 
+	//private double endTime = 0;
+	private long startTime = 0; 
+	private long endTime = 0;
+	private double coreDistance = 0;
+	
+	private double angleRate = -1;
+	DataPoint corePoint;
+	//if true, then compute the distance linear, otherwise compute the distance by considering the trajectory
+	boolean simpleDistance;
+	
+	public NeighborList(DataPoint core, boolean sim) {
+		corePoint = core;
+		simpleDistance = sim;
+	}
+	
+	
+	//public double time() {
+	public long time() {
+		return endTime-startTime;
+	}
+	
+	
+	
+	public boolean add(DataPoint dp) {
+		
+		if(dp.getTime() < startTime || startTime == 0 ) {
+			startTime = dp.getTime();
+		}
+		if(dp.getTime() > endTime || endTime == 0 ) {
+			endTime = dp.getTime();
+		}
+		
+		return super.add(dp);
+	}
+
+	/**
+	 * Computes the angleRate for the points that are in minTime and in the eps neighbourhood
+	 */
+	public double computeAngleRate(long minTime) {
+		
+		// 1. catch the points that are within minTime
+		
+		LinkedList<DataPoint> neighbours = getPointsWithinMinTime(minTime);
+		
+		// 2. Compute the angelRate based on that points
+		// iterate over the neigborhood and determine for three consecutive points x1 and x2 the angel rate based 
+		// on the direction of the point x0.
+		int counter = 0;
+		double tempAngleRate = 0;
+		//list of three points to compute the angle rate
+		DataPoint[] threePoints = new DataPoint[3];
+		for (Iterator it = neighbours.iterator(); it.hasNext();) {
+			DataPoint dp = (DataPoint) it.next();
+			counter++;
+			if(counter > 2 ) {
+				// add new Point 
+				threePoints[2] = dp;
+				//For the first two points the angle rate cannot be computed
+				//compute here the angle rate
+				tempAngleRate = tempAngleRate + this.angleRateOfTwoLines(((CartesianPoint)threePoints[0].getVector().getSpatial()),
+						((CartesianPoint)threePoints[1].getVector().getSpatial()), 
+						((CartesianPoint)threePoints[2].getVector().getSpatial()));
+				//remove temporal youngest point
+				threePoints[0] = threePoints[1];
+				threePoints[1] = threePoints[2];
+			}
+			else {
+				threePoints[counter-1] = dp;
+			}
+		
+		}//for
+		
+		//normalize the added angle rate to percentage and in terms of the number of neighbours
+		tempAngleRate = tempAngleRate/180;
+		tempAngleRate = tempAngleRate/(neighbours.size()-1); //-1 due to the first two points
+		
+		return tempAngleRate;
+	}
+	
+	
+	
+	private LinkedList<DataPoint> getPointsWithinMinTime(long minTime) {
+		LinkedList<DataPoint> tmp = new LinkedList<DataPoint>();
+		// own ID
+		int ID = corePoint.getID().intValue();
+		for (Iterator it = super.iterator(); it.hasNext();) {
+			DataPoint nextDP = (DataPoint) it.next();
+			if(nextDP.getID() != ID && Math.abs(corePoint.getTime()-nextDP.getTime()) <= minTime) {
+				tmp.add(nextDP);
+			}
+			else {
+				//check whether the loop may be interrupted here
+			}
+		}
+		
+		
+		return tmp;
+	}
+	
+	/**
+	 * Computes the CoreDistance based on the minTime, it gets delivered the neighbours based on eps. 
+	 * @param minTime
+	 * @return CoreDistance
+	 */
+	public double getCoreDistance(long minTime) {
+		//trajectory distance
+		if(simpleDistance == false) {
+			coreDistance = Math.max(F_minus(corePoint.getID().intValue(),minTime), 
+					F_plus(corePoint.getID().intValue(),minTime));
+		}
+		//linear distance
+		else {
+			coreDistance = Math.max(F_minusLinear(corePoint.getID().intValue(),minTime), 
+					F_plusLinear(corePoint.getID().intValue(),minTime));
+		}
+		
+		
+		return coreDistance;
+	}
+	
+	
+	
+	//Linear Distance
+	private double F_plusLinear(int n, long minTime) {
+		double distance = 0;
+		LinkedList<DataPoint> tmp = new LinkedList<DataPoint>();
+        ListIterator it = super.listIterator(super.size());
+        while (it.hasPrevious()) {
+          DataPoint dp = (DataPoint) it.previous();
+          if(dp.getID().intValue() < n) {
+            break;
+          }
+          else {
+            tmp.add(dp);
+          }
+        }
+        /*
+		for (Iterator it = super.descendingIterator(); it.hasNext();) {
+            DataPoint dp = (DataPoint) it.next();
+            if(dp.getID().intValue() < n) {
+                break;
+            }
+            else {
+                tmp.add(dp);
+            }
+        }
+        */
+		DataPoint current = corePoint;
+		int size = tmp.size()-1;
+		for (int i = 0; i <= size; i++) {
+			if(Math.abs(corePoint.getTime()-current.getTime()) >= minTime) {
+				return corePoint.getVector().distanceTo(tmp.get(size-i).getVector());
+			}
+			current = tmp.get(size-i);
+		}
+		
+		if(tmp.size() > 0) {
+			return corePoint.getVector().distanceTo(tmp.get(0).getVector());
+		}
+		else return 0;
+		
+		
+	}
+	
+	//Trajectory Distance
+	private double F_plus(int n, long minTime) {
+		double distance = 0;
+		LinkedList<DataPoint> tmp = new LinkedList<DataPoint>();
+        ListIterator it = super.listIterator(super.size());
+        while (it.hasPrevious()) {
+          DataPoint dp = (DataPoint) it.previous();
+          if(dp.getID().intValue() < n) {
+            break;
+          }
+          else {
+            tmp.add(dp);
+          }
+        }
+        /*
+		for (Iterator it = super.descendingIterator(); it.hasNext();) {
+			DataPoint dp = (DataPoint) it.next();
+			if(dp.getID().intValue() < n) {
+				break;
+			}
+			else {
+				tmp.add(dp);
+			}
+		}
+        */
+		DataPoint current = corePoint;
+		int size = tmp.size()-1;
+		for (int i = 0; i <= size; i++) {
+			distance = distance + current.getVector().distanceTo(tmp.get(size-i).getVector());
+			if(Math.abs(corePoint.getTime()-current.getTime()) >= minTime) {
+				return distance;
+			}
+			current = tmp.get(size-i);
+		}
+		
+		return distance;
+		
+		
+	}
+	
+	
+	//Linear Distance
+	private double F_minusLinear(int n, long minTime) {
+		double distance = 0;
+		LinkedList<DataPoint> tmp = new LinkedList<DataPoint>();
+		for (Iterator it = super.iterator(); it.hasNext();) {
+			DataPoint dp = (DataPoint) it.next();
+			if(dp.getID().intValue() >n) {
+				break;
+			}
+			else {
+				tmp.add(dp);
+			}
+		}
+		DataPoint current = corePoint;
+		int size = tmp.size()-1;
+		for (int i = 0; i <= size; i++) {
+			
+			if(Math.abs(corePoint.getTime()-current.getTime()) >= minTime) {
+				return corePoint.getVector().distanceTo(tmp.get(size-i).getVector());
+			}
+			
+			current = tmp.get(size-i);
+		}
+		if(tmp.size() > 0) {
+			return corePoint.getVector().distanceTo(tmp.get(0).getVector());
+		}
+		else return 0;
+		
+	}
+	
+	
+	
+	//Trajectory Distance
+	private double F_minus(int n, long minTime) {
+		double distance = 0;
+		LinkedList<DataPoint> tmp = new LinkedList<DataPoint>();
+		for (Iterator it = super.iterator(); it.hasNext();) {
+			DataPoint dp = (DataPoint) it.next();
+			if(dp.getID().intValue() >n) {
+				break;
+			}
+			else {
+				tmp.add(dp);
+			}
+		}
+		DataPoint current = corePoint;
+		int size = tmp.size()-1;
+		for (int i = 0; i <= size; i++) {
+			//computation of the distance by considering the trajectory
+			distance = distance + current.getVector().distanceTo(tmp.get(size-i).getVector());
+			
+			if(Math.abs(corePoint.getTime()-current.getTime()) >= minTime) {
+				return distance;
+			}
+			
+			current = tmp.get(size-i);
+		}
+		return distance;
+		
+	}
+	
+	
+	/**
+	 * determines the angle rate of point c in terms of the points a and b
+	 * @param a first point in the row
+	 * @param b second point in the row
+	 * @param c current point for which the angle rate is gonna compute
+	 * @return angle rate of c in term of a and b
+	 */
+	private double angleRateOfTwoLines(CartesianPoint a, CartesianPoint b, CartesianPoint c) {
+		double angle = 0;
+		Line ab = new Line(a,b);
+		Line bc = new Line(b,c);
+		Line orthogonal = ab.getOrthogonal(b);
+		
+		/*
+		 * everywhere behind the orthogonal of ab there is a degree greater than 90! 
+		 */
+		
+		if(ab.getSlope()>0) {
+			//positive slope
+			if(a.getX() < b.getX()) {
+				// ahead movement
+				if(orthogonal.getSideOfPoint(c) == false) {
+					// point is below the orthogonal
+					angle = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angle = ab.determineBiasAngle(bc);
+				}
+			}
+			else {
+				// backward movement
+				if(orthogonal.getSideOfPoint(c)) {
+					// point is below the orthogonal
+					angle = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angle = ab.determineBiasAngle(bc);
+				}
+			}
+		}
+		else if(ab.getSlope() == 0){
+			//0 slope a_x = b_x
+		}
+		
+		else {
+			//negative slope
+			if(a.getX()>b.getX()) {
+				// ahead movement
+				if(orthogonal.getSideOfPoint(c) == false) {
+					// point is below the orthogonal
+					angle = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angle = ab.determineBiasAngle(bc);
+				}
+			}
+			else {
+				// backward movement
+				if(orthogonal.getSideOfPoint(c)) {
+					// point is below the orthogonal
+					angle = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angle = ab.determineBiasAngle(bc);
+				}
+			}
+		}
+		
+		if(angle < 0 ) {
+			System.out.println("Hold on!!!");
+		}
+		return angle;
+		
+		
+	}
+	
+	
+	
+}
+/
+
+

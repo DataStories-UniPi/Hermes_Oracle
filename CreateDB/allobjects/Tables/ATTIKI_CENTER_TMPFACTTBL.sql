@@ -1,0 +1,17 @@
+Prompt Table ATTIKI_CENTER_TMPFACTTBL;
+CREATE TABLE ATTIKI_CENTER_TMPFACTTBL
+(
+  TIME_ID            INTEGER                    NOT NULL,
+  SPACE_ID           INTEGER                    NOT NULL,
+  USERPROFILE_ID     INTEGER                    NOT NULL,
+  DISTANCE_TRAVELED  NUMBER(22,2),
+  TIME_DURATION      INTEGER,
+  SPEED              INTEGER,
+  ACCELERATION       INTEGER,
+  OBJ_ID             INTEGER,
+  TRAJ_ID            INTEGER
+)
+TABLESPACE USERS
+/
+
+

@@ -1,0 +1,1 @@
+<Polygon><extrude>0</extrude><tessellate>0</tessellate><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>23.6112380643128,37.9612592435694 23.7501189210373,37.9616361824351 23.7500333605171,37.9868720467239 23.6111049526977,37.9864947675755 23.6112380643128,37.9612592435694 </coordinates></LinearRing></outerBoundaryIs></Polygon>

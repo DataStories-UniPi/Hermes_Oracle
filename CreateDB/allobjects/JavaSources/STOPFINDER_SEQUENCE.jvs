@@ -1,0 +1,167 @@
+Prompt Java Source STOPFINDER_SEQUENCE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_SEQUENCE as package stopfinder;
+
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+/**
+ * A sequence is a list of points.
+ * @author zimmemax
+ *
+ */
+public class Sequence {
+
+	LinkedList<DataPoint> sq;
+	int id;
+
+	public Sequence(int id) {
+		sq = new LinkedList<DataPoint>();
+		this.id = id;
+	}
+
+
+
+	public void add(DataPoint e) {
+		sq.add(e);
+	}
+
+
+	public DataPoint get(int index) {
+
+		return sq.get(index);
+	}
+
+	/**
+	 * Creates the string for the csv file (x,y,id)
+	 */
+	public String giveString(String datasetname) {
+		char separator = ',';
+		String userid=datasetname.substring(1, datasetname.indexOf("t"));
+		String trajid = datasetname.substring(datasetname.indexOf("t")+1, datasetname.indexOf("."));
+		StringBuffer sBuffer = new StringBuffer();
+		for (Iterator iterator = sq.iterator(); iterator.hasNext();) {
+			sBuffer.append(userid);
+			sBuffer.append(separator);
+
+			sBuffer.append(trajid);
+			sBuffer.append(separator);
+
+			DataPoint dp = (DataPoint) iterator.next();
+			sBuffer.append(dp.getVector().getSpatial().getX());
+
+			sBuffer.append(separator);
+			sBuffer.append(dp.getVector().getSpatial().getY());
+
+			sBuffer.append(separator);
+			sBuffer.append(dp.getTime());
+
+			sBuffer.append(separator);
+			sBuffer.append(id+"\n");
+		}
+
+
+		return sBuffer.toString();
+	}
+
+	public String giveReachability() {
+		char separator = ',';
+		StringBuffer sBuffer = new StringBuffer();
+		for (Iterator iterator = sq.iterator(); iterator.hasNext();) {
+			DataPoint dp = (DataPoint) iterator.next();
+			sBuffer.append(dp.getReachability());
+
+			sBuffer.append(separator);
+			sBuffer.append(id+"\n");
+		}
+		return sBuffer.toString();
+	}
+
+	// It's the method for printing the sequences as coordinates
+	public static void writeSequence(LinkedList<Sequence> allSequences, String datasetfullname) {
+		//File file = new File("sequence.csv");
+        File filetmp = new File(datasetfullname);
+        //System.out.println(filetmp.getName());
+        String datasetname = filetmp.getName();
+		String filename = "seq"+datasetname.substring(0, datasetname.length()-4)+".csv";
+        //System.out.println(filetmp.getParent()+"/"+filename);
+		File file = new File(filetmp.getParent()+"/"+filename);
+	    FileOutputStream fos = null;
+	    BufferedOutputStream bos = null;
+	    DataOutputStream dos = null;
+	    try {
+	    	fos = new FileOutputStream(file);
+	    	bos = new BufferedOutputStream(fos);
+	        dos = new DataOutputStream(bos);
+
+	        dos.writeBytes("userid,trajid,x-coordinate,y-coordinate,time,stop-sequence-nr \n");
+
+	        for (Iterator iterator = allSequences.iterator(); iterator.hasNext();) {
+				Sequence sq = (Sequence) iterator.next();
+
+				dos.writeBytes(sq.giveString(datasetname));
+
+			}
+
+	        dos.close();
+	        bos.close();
+	        fos.close();
+	    }
+
+	    catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+
+
+	}
+
+
+	// It's the method for printing the sequences as REACHABILITIES
+	public static void writeReachability(LinkedList<Sequence> allSequences) {
+		File file = new File("sequence-reachability.csv");
+	    FileOutputStream fos = null;
+	    BufferedOutputStream bos = null;
+	    DataOutputStream dos = null;
+	    try {
+	    	fos = new FileOutputStream(file);
+	    	bos = new BufferedOutputStream(fos);
+	        dos = new DataOutputStream(bos);
+
+	        dos.writeBytes("reachability,sequence-nr \n");
+
+	        for (Iterator iterator = allSequences.iterator(); iterator.hasNext();) {
+				Sequence sq = (Sequence) iterator.next();
+
+				dos.writeBytes(sq.giveReachability());
+
+			}
+
+	        dos.close();
+	        bos.close();
+	        fos.close();
+	    }
+
+	    catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+
+
+	}
+
+
+
+}
+/
+
+

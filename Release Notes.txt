@@ -1,0 +1,35 @@
+HERMES MOD- ORACLE DATABASE Release Notes
+InfoLab
+======================================================
+Rel xxxx2012
+
+*	Added objects
+-add TDW package as replacing code with hardcoded values proven more dificult and error prone
+-add second tbfunctions.tb_mp_in_spatiotemporal_window for use with any tbtree structure (as parameter)
+-all procedures for creating and loading a TDW gone to package TDW
+-all TDW procedures are overloaded for use with any TDW scheme
+-Semantic trajectory database scheme
+-Packages for semantic STD and SDW along with objects and definitions
+
+*	Modified objects
+-moving_point type now has srid as attribute (all dependant types etc are modified)
+-fixed function ODCIIndexStart (geom, tp) may do the fetch more quickly later
+-procedure bulkload_raw_trajectories, loadmpoint generalized to accept any input, output table like milano_cl_raw structure
+-tbfunctions taking parameter tbtree structure tables
+
+
+-------------------------------------------------------
+Rel 22052012
+
+*	Added objects
+-hermes_gstd package with correspoding types
+-distortion package for graphs on privacy
+-table poi_milano to store POIs from privacy forms
+-statistics package and correspoding table dataforstatisticgraphs
+
+*	Modified objects
+-table fakes add column k_param
+-remove character & from all pl/sql code(even in comments)
+-table parameters now has a column table_name to link a SRID with a table of moving points (affected code: bopw_tr,f_douglas_peucker,hpv, moving_point, sed, splitspace, td_tr, unit_moving_point, visualizer, utilities, tbfunctions)
+-type moving_point body, function at_period bug fixed
+-tbfunctions package tbtree structure fixed

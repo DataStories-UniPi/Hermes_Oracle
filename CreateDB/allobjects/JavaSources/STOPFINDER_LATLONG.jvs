@@ -1,0 +1,57 @@
+Prompt Java Source STOPFINDER_LATLONG;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_LATLONG as package stopfinder;
+
+
+
+/**
+ * Represents a geographical Point by using the latitude and longitude
+ * @author zimmemax
+ *
+ */
+public class LatLong implements Spatial{
+
+	// CONSTANTS USED INTERNALLY
+	final double DEGREES_TO_RADIANS = ( Math.PI/180.0 );
+
+	private double latitude;
+	private double longitude;
+
+
+	public LatLong(double lat, double lon) {
+		latitude = lat;
+		longitude = lon;
+	}
+
+
+	public double getX() {
+		return latitude;
+	}
+	public void setX(double latitude) {
+		this.latitude = latitude;
+	}
+	public double getY() {
+		return longitude;
+	}
+	public void setY(double longitude) {
+		this.longitude = longitude;
+	}
+
+	public double getLongitudeRadian() {
+		return longitude * DEGREES_TO_RADIANS;
+	}
+
+	public double getLatitudeRadian() {
+		return latitude * DEGREES_TO_RADIANS;
+	}
+
+
+	//@Override
+	public double distanceTo(Spatial newP) {
+		return Distance.getInstance().computeDistance(this,(LatLong) newP);
+	}
+
+
+}
+/
+
+

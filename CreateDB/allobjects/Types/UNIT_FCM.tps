@@ -1,0 +1,9 @@
+Prompt Type UNIT_FCM;
+CREATE OR REPLACE TYPE UNIT_FCM AS OBJECT (
+
+u_tau UNIT_TAU,
+u_dir UNIT_DIR
+);
+/
+
+
