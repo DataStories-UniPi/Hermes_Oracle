@@ -1,0 +1,11 @@
+Prompt drop DIRECTORY TEMP_DIR;
+DROP DIRECTORY TEMP_DIR
+/
+
+Prompt Directory TEMP_DIR;
+CREATE OR REPLACE DIRECTORY 
+TEMP_DIR AS 
+'C:\temp'
+/
+
+

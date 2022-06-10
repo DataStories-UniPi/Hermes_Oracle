@@ -1,0 +1,151 @@
+Prompt Java Source STOPFINDER_READDATA;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_READDATA as package stopfinder;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+
+import stopfinder.DataPoint;
+import stopfinder.Distance;
+import stopfinder.FeatureVector;
+
+public class ReadData {
+	
+	
+	private HashMap<String, String> runtimeVariables;
+	
+	private LinkedList<DataPoint> dataPoints;
+	
+	private int[] columnsToRead;
+	
+	private double eps;
+	//private double minTime = 0;
+	private long minTime = 0;
+	
+	private final char signForTime = 'T';
+	private final String signForCluster = "Cluster";
+	
+	/** Constructor for the class */
+	public ReadData(HashMap<String, String> runtimeVariables) {
+		this.runtimeVariables = runtimeVariables;
+	}
+	
+	public void readData() {
+		readFromFile();
+		
+	}
+	
+	
+	
+	private void readFromFile() {
+		dataPoints = new LinkedList<DataPoint>();
+        
+		File file = new File(runtimeVariables.get("dataset"));
+        
+		String delimiter = runtimeVariables.get("delimiter");
+		delimiter = " ";
+	    FileInputStream fis = null;
+	    BufferedInputStream bis = null;
+	    DataInputStream dis = null;
+	    Integer numberColumns = Integer.parseInt(runtimeVariables.get("numberColumns"));
+	    columnsToRead = new int[numberColumns.intValue()];
+	    String header = runtimeVariables.get("header");
+	    StringBuffer incolumns= new StringBuffer(runtimeVariables.get("columns"));
+	    //position of the time in the dataset
+	    int posTime = 0;
+	    int posCluster = 0;
+	    
+	    String[] res;
+	    String line;
+	    try {
+            
+	    	fis = new FileInputStream(file);
+            
+	    	bis = new BufferedInputStream(fis);
+	        dis = new DataInputStream(bis);
+	        
+	        if(header.equals("yes")) {
+	        	//create the columns to read
+	        	line  = dis.readLine();
+	        	res = line.split(delimiter);
+	        	int colNumber = 0;
+	        	for (int i = 0; i < res.length; i++) {
+	        		if(colNumber < numberColumns.intValue() && incolumns.charAt(0) == res[i].charAt(0)) {
+	        			columnsToRead[colNumber] = i;
+	        			colNumber++;
+	        			incolumns.delete(0, 2);
+	        			
+	        			//set the Time and Cluster position of the row
+	        			if(signForTime == res[i].charAt(0)) {
+	        				posTime = colNumber;
+	        			}
+	        			if(signForCluster.equals(res[i])) {
+	        				posCluster = colNumber;
+	        			}
+	        			
+	        			
+	        		}	
+				}
+	        }
+	        
+	        int j = 0;
+	        while (dis.available() != 0) {
+	        	j++;
+	        	line  = dis.readLine();
+	        	res = line.split(delimiter);
+	        	FeatureVector vector = new FeatureVector(numberColumns.intValue(),j); 
+	        	for (int i = 0; i < numberColumns.intValue(); i++) {
+					vector.addValue(i, new Double(res[columnsToRead[i]]).doubleValue());
+				}
+	        	//Set the spatial property of the point
+	        	vector.setSpatial(runtimeVariables.get("cartesian"));
+	        	
+	        	dataPoints.add(new DataPoint(j,vector,posTime-1,posCluster-1));
+	        	
+	        	
+	        	//count the distances of two consecutive points
+	        	if(dataPoints.size()>1) {
+	        		eps = eps+Math.abs(dataPoints.getLast().getVector().
+	        				distanceTo(dataPoints.get(dataPoints.size()-2).getVector()));
+	        	}
+	           }
+	        
+	        //compute the mean of the distances
+	        eps = eps/dataPoints.size();
+	        
+		} catch (FileNotFoundException e) {
+			System.out.println("File Not Found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+		
+	}
+	
+	public LinkedList<DataPoint> getDataPoints() {
+		return dataPoints;
+	}
+
+	public double getEps() {
+		
+		return eps;
+	}
+	
+	//public double getMintime() {
+	public long getMintime() {
+		if(minTime == 0) {
+			minTime = (dataPoints.getLast().getTime()-dataPoints.getFirst().getTime())/dataPoints.size();
+		}
+		return minTime;
+	}
+	
+	
+}
+/
+
+

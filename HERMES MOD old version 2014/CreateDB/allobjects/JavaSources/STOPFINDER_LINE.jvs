@@ -1,0 +1,120 @@
+Prompt Java Source STOPFINDER_LINE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_LINE as package stopfinder;
+
+
+public class Line {
+    
+    
+    // it's the m
+    double slope;
+    
+    // it's the b
+    double Yintercept;
+    
+
+    // determines line by two points, the x coordinates must be different
+    public Line(CartesianPoint a, CartesianPoint b) {
+        if(b.getX() == a.getX()) {
+            slope = 0;
+        }
+        else {
+            slope = ((double)(b.getY()-a.getY())) / ((double)(b.getX()-a.getX())); 
+        }
+        
+        Yintercept = a.getY()-(slope*a.getX());
+    }
+    
+    // determines line by slope and y-interception
+    public Line(double m, double b) {
+        slope = m;
+        Yintercept = b;
+    }
+    
+    
+    /**
+     * determines the bias angle with line a 
+     * Suppose we have 3 Points, a,b and c. a is the extended line of ab (m2) and
+     * the current line is the line built by c and b (m1).
+     * The bias angle is always the smaller angle.
+     * @return value of bias angle
+     */
+    
+    public double determineBiasAngle(Line a) {
+        double angel;
+        double denom;
+        if(this.slope == 0 && a.getSlope() == 0 && a.getYintercept() == 0) {
+            denom = 0;
+        }
+        else {
+            denom = 1 + (this.slope*a.getSlope());
+        }
+        
+        
+        if(denom == 0) {
+            // it's 90 degree
+            angel = Math.PI/2;
+        }
+        else {
+            //determine the angle
+            angel = Math.abs(this.slope-a.getSlope()/denom);
+            angel = Math.atan(angel);
+        }
+        return (angel/Math.PI) * 180;
+    }
+    
+    
+    public double getSlope() {
+        return slope;
+    }
+
+    public double getYintercept() {
+        return Yintercept;
+    }
+
+    
+    /**
+     * 
+     * @param a point on the line
+     * @return orthogonal of the line
+     */
+    public Line getOrthogonal(CartesianPoint a) {
+        Line orth;
+        if(slope == 0) {
+            orth  = new Line(0,0);
+        }
+        else {
+            double newSlope = -(1/slope);
+            double newB = a.getY()- (newSlope*a.getX());
+            orth = new Line(newSlope,newB);
+        }
+        
+        return orth;
+    }
+    
+    
+    /**
+     * determines the side where the point a has located
+     * @param a
+     * @return true=above; false=below;
+     */
+    public boolean getSideOfPoint(CartesianPoint a) {
+        double y = (this.slope*a.getX())+Yintercept;
+        if(y > a.getY()) {
+            //point a is below the line 
+            return false;
+        }
+        else if (y==a.getY()){
+            // point a is on the line
+            // TODO: what shall happen in that case?
+            return true;
+        }
+        else {
+            //point a is above the line
+            return true;
+        }
+    }
+    
+}
+/
+
+

@@ -1,0 +1,7 @@
+Prompt Directory TEMP_DIR;
+CREATE OR REPLACE DIRECTORY 
+TEMP_DIR AS 
+'C:\temp'
+/
+
+

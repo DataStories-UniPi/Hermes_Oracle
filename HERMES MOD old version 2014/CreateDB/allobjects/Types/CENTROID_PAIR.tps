@@ -1,0 +1,10 @@
+Prompt Type CENTROID_PAIR;
+CREATE OR REPLACE TYPE CENTROID_PAIR AS OBJECT (
+
+centroid NUMBER,
+centroid_set NUMBER_SET
+
+);
+/
+
+

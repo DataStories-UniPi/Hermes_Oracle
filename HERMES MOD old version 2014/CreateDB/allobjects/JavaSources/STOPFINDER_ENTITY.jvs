@@ -1,0 +1,119 @@
+Prompt Java Source STOPFINDER_ENTITY;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_ENTITY as package stopfinder;
+
+import java.util.LinkedList;
+
+public class Entity implements Cloneable{
+	
+	private Integer id;
+	
+	//private double startTime;
+	
+	//private double endTime;
+	private long startTime;
+	
+	private long endTime;
+	
+	private double velocity;
+	
+	private double distance;
+	
+	
+	/**
+	 * here the variable means the quality of the entity.
+	 * Possible values are:
+	 * artefact -> means the entity is an artefact, and must not longer to be split  
+	 * stable 	-> the entity is stable
+	 * long 	-> the entity might be a big and stable cluster or big and artefact
+	 * move		-> the entity is a move
+	 */
+	private String feature;
+	
+	
+	private LinkedList<DataPoint> points;
+	
+	private boolean isStop;
+	
+	public Entity (int id) {
+		this.id = new Integer(id);
+		points = new LinkedList<DataPoint>();
+	}
+
+	//public double getStartTime() {
+	public long getStartTime() {
+		return startTime;
+	}
+
+	//public void setStartTime(double startTime) {
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	//public double getEndTime() {
+	public long getEndTime() {
+		return endTime;
+	}
+
+	//public void setEndTime(double endTime) {
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
+	public double getVelocity() {
+		return velocity;
+	}
+
+	public void setVelocity(double velocity) {
+		this.velocity = velocity;
+	}
+	
+	public void addPoint(DataPoint dp) {
+		points.add(dp);
+	}
+	
+	public DataPoint getPoint(int index) {
+		return points.get(index);
+	}
+	
+	public DataPoint getLastPoint() {
+		return points.getLast();
+	}
+	
+	public int getNumberOfPoints() {
+		return points.size();
+	}
+	
+	public boolean isStop() {
+		return isStop;
+	}
+	
+	public void isStop(boolean isSTop) {
+		this.isStop = isSTop;
+	}
+
+	public void addDistance(double subDistance) {
+		distance = distance+subDistance;
+	}
+	
+	public double getDistance() {
+		return distance;
+	}
+	
+	public LinkedList<DataPoint> getPoints() {
+		return points;
+	}
+
+	public String getFeature() {
+		return feature;
+	}
+
+	public void setFeature(String feature) {
+		this.feature = feature;
+	}
+	
+	
+	
+}
+/
+
+

@@ -1,0 +1,39 @@
+Prompt Table INSUR_CUST_LTV_SAMPLE;
+CREATE TABLE INSUR_CUST_LTV_SAMPLE
+(
+  CUSTOMER_ID              VARCHAR2(100 BYTE),
+  LAST                     VARCHAR2(100 BYTE),
+  FIRST                    VARCHAR2(100 BYTE),
+  STATE                    VARCHAR2(100 BYTE),
+  REGION                   VARCHAR2(100 BYTE),
+  SEX                      VARCHAR2(100 BYTE),
+  PROFESSION               VARCHAR2(100 BYTE),
+  BUY_INSURANCE            VARCHAR2(100 BYTE),
+  AGE                      NUMBER,
+  HAS_CHILDREN             NUMBER,
+  SALARY                   NUMBER,
+  N_OF_DEPENDENTS          NUMBER,
+  CAR_OWNERSHIP            NUMBER,
+  HOUSE_OWNERSHIP          NUMBER,
+  TIME_AS_CUSTOMER         NUMBER,
+  MARITAL_STATUS           VARCHAR2(100 BYTE),
+  CREDIT_BALANCE           NUMBER,
+  BANK_FUNDS               NUMBER,
+  CHECKING_AMOUNT          NUMBER,
+  MONEY_MONTLY_OVERDRAWN   NUMBER,
+  T_AMOUNT_AUTOM_PAYMENTS  NUMBER,
+  MONTHLY_CHECKS_WRITTEN   NUMBER,
+  MORTGAGE_AMOUNT          NUMBER,
+  N_TRANS_ATM              NUMBER,
+  N_MORTGAGES              NUMBER,
+  N_TRANS_TELLER           NUMBER,
+  CREDIT_CARD_LIMITS       NUMBER,
+  N_TRANS_KIOSK            NUMBER,
+  N_TRANS_WEB_BANK         NUMBER,
+  LTV                      NUMBER,
+  LTV_BIN                  VARCHAR2(100 BYTE)
+)
+TABLESPACE USERS
+/
+
+

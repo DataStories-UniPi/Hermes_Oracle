@@ -1,0 +1,8 @@
+Prompt Type MODEL_FCM;
+CREATE OR REPLACE TYPE MODEL_FCM AS OBJECT (
+
+u_fcm UNIT_FCM
+);
+/
+
+

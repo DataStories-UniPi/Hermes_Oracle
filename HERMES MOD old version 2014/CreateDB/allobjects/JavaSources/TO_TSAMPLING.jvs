@@ -1,0 +1,77 @@
+Prompt Java Source TO_TSAMPLING;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED TO_TSAMPLING as import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.Calendar;
+import java.util.Date;
+import oracle.sql.ARRAY;
+import oracle.sql.STRUCT;
+
+public class ToTSampling
+{
+  private static int traj_id;
+  private static int srid;
+  
+  public static void entry()
+  {
+  }
+  
+  public static void writeFile(String filename, oracle.sql.ARRAY mpoints) throws Exception{
+    BufferedWriter out = new BufferedWriter(new FileWriter(filename));
+    for (int i = 0; i < mpoints.length(); i++) {
+      STRUCT mpoint = (STRUCT) mpoints.getOracleArray()[i];
+      
+      ARRAY u_tab = (ARRAY) mpoint.getAttributes()[0];
+      
+      if (mpoint.getAttributes()[1] != null)
+        traj_id = Integer.valueOf(mpoint.getAttributes()[1].toString());
+      if (mpoint.getAttributes()[2] != null)
+        srid = Integer.valueOf(mpoint.getAttributes()[2].toString());
+      int nSegs = u_tab.length();
+      
+      if (nSegs > 0){
+        out.write(traj_id + " " + (nSegs + 1) + " ");
+        for (int s = 0; s < nSegs; s++) {
+          STRUCT unit_mpoint = (STRUCT)u_tab.getOracleArray()[s];
+          STRUCT p = (STRUCT) unit_mpoint.getAttributes()[0];
+          STRUCT m = (STRUCT) unit_mpoint.getAttributes()[1];
+          if (s < nSegs-1) {
+            STRUCT b = (STRUCT) p.getAttributes()[0];
+            out.write(computeTime(b)+" ");
+            out.write(m.getAttributes()[0].toString()+" ");
+            out.write(m.getAttributes()[1].toString()+" ");
+          } else {
+            STRUCT e = (STRUCT) p.getAttributes()[1];
+            out.write(computeTime(e)+" ");
+            out.write(m.getAttributes()[2].toString()+" ");
+            out.write(m.getAttributes()[3].toString()+" ");
+          }
+        }
+        out.newLine();
+      }
+    
+    }
+    out.close();
+    //System.out.println(filename);
+  }
+
+    private static String computeTime(STRUCT t)  throws Exception{//needs to be checked
+      Date j = new Date(-4712-1900,1-1,1);
+      Date d = new Date();
+      d.setYear(Integer.parseInt(t.getAttributes()[0].toString()) - 1900);
+      d.setMonth(Integer.parseInt(t.getAttributes()[1].toString()) - 1);
+      d.setDate(Integer.parseInt(t.getAttributes()[2].toString()));
+      d.setHours(Integer.parseInt(t.getAttributes()[3].toString()));
+      d.setMinutes(Integer.parseInt(t.getAttributes()[4].toString()));
+      d.setSeconds(Integer.parseInt(t.getAttributes()[5].toString()));
+      //System.out.println(d.getYear()+","+d.getMonth()+","+d.getDate()+","+d.getHours()+","+d.getMinutes()+","+d.getSeconds());
+      //System.out.println(d.toString());
+      //System.out.println(j.toString());
+      //System.out.println(d.getTime()/1000);
+      //System.out.println(j.getTime()/1000);
+      //System.out.println((d.getTime()-j.getTime())/1000);
+      return String.valueOf((d.getTime()-j.getTime())/1000);
+    }
+}
+/
+
+

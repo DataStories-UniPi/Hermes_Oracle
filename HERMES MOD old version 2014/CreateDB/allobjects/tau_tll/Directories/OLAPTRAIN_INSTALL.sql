@@ -1,0 +1,11 @@
+Prompt drop DIRECTORY OLAPTRAIN_INSTALL;
+DROP DIRECTORY OLAPTRAIN_INSTALL
+/
+
+Prompt Directory OLAPTRAIN_INSTALL;
+CREATE OR REPLACE DIRECTORY 
+OLAPTRAIN_INSTALL AS 
+'C:\Users\stylianos\Desktop\olaptrain_install\olaptrain_install'
+/
+
+

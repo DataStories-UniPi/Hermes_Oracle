@@ -1,0 +1,21 @@
+Prompt Table IMIS_3DAYS_RAW;
+CREATE TABLE IMIS_3DAYS_RAW
+(
+  USERID        NUMBER,
+  TRAJECTORYID  NUMBER,
+  T             TIMESTAMP(6),
+  X             NUMBER,
+  Y             NUMBER,
+  YEAR          NUMBER,
+  MONTH         NUMBER,
+  DAY           NUMBER,
+  HOUR          NUMBER,
+  MINUTE        NUMBER,
+  SECOND        NUMBER,
+  LONGITUDE     NUMBER(38,8),
+  LATITUDE      NUMBER(38,8)
+)
+TABLESPACE USERS
+/
+
+

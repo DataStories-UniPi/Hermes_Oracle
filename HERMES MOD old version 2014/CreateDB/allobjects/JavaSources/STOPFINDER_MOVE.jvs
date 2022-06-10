@@ -1,0 +1,15 @@
+Prompt Java Source STOPFINDER_MOVE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_MOVE as package stopfinder;
+
+public class Move extends Entity{
+
+	public Move(int id) {
+		super(id);	
+	}
+	
+	
+
+}
+/
+
+

@@ -1,0 +1,5 @@
+Prompt Type COORDS;
+CREATE OR REPLACE TYPE coords AS VARRAY (2) OF NUMBER;
+/
+
+

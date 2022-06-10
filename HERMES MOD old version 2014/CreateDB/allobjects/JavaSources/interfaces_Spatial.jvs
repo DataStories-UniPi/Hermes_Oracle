@@ -1,0 +1,26 @@
+Prompt drop Java Source "interfaces_Spatial";
+DROP JAVA SOURCE "interfaces_Spatial"
+/
+
+Prompt Java Source "interfaces_Spatial";
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED "interfaces_Spatial" as package interfaces;
+
+public interface Spatial {
+
+	public double getX();
+
+	public void setX(double x);
+
+	public double getY();
+
+	public void setY(double y);
+	
+	public double distanceTo(Spatial newP);
+	
+	
+}
+/
+
+SHOW ERRORS;
+
+

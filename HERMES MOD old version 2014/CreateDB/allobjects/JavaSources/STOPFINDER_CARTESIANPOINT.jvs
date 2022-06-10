@@ -1,0 +1,41 @@
+Prompt Java Source STOPFINDER_CARTESIANPOINT;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_CARTESIANPOINT as package stopfinder;
+
+
+public class CartesianPoint implements Spatial{
+	
+	private double x;
+	private double y;
+	
+	public CartesianPoint (double newx, double newy){
+		x = newx;
+		y = newy;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public void setX(double x) {
+		this.x = x;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public void setY(double y) {
+		this.y = y;
+	}
+
+	//@Override
+	public double distanceTo(Spatial newP) {
+		return Distance.getInstance().computeDistance(this,(CartesianPoint) newP);
+	}
+
+	
+	
+}
+/
+
+

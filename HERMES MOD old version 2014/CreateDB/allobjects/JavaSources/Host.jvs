@@ -1,0 +1,156 @@
+Prompt Java Source "Host";
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED "Host" as import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import oracle.jdbc.pool.OracleDataSource;
+import java.sql.*;
+
+public class Host {
+
+    public static void executeCommand(String inputCommand) {
+        System.out.println("executeCommand thread start");
+        try {
+            List<String> command;
+            if (isWindows()) {
+                command = new ArrayList<String>();
+                command.add("cmd.exe");
+                //command.add("/C");
+                command.add(inputCommand);
+            } else {
+                System.out.println("Not a Windows system.");
+                return;
+            }
+            ProcessBuilder builder = new ProcessBuilder(command);
+            Map<String, String> environ = builder.environment();
+            final Process pr = builder.start();
+            pr.waitFor();
+
+            Thread input = new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("input thread start");
+                    BufferedReader br_in = null;
+                    PreparedStatement pstmt = connect();
+                    System.out.println("input thread connected");
+                    try {
+                        br_in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+                        String buff = null;
+                        while ((buff = br_in.readLine()) != null) {
+                            System.out.println("Process out :" + buff);
+                            addOutput(buff, pstmt);
+                            try {
+                                Thread.sleep(100);
+                            } catch (Exception e) {
+                            }
+                        }
+                        br_in.close();
+                        System.out.println("input thread outside while");
+                    } catch (IOException ioe) {
+                        System.out.println("IO Exception caught printing process output.");
+                        ioe.printStackTrace();
+                    } catch (Exception ex) {
+                        System.out.println("Exception caught printing process input.");
+                    } finally {
+                        try {
+                            br_in.close();
+                            pstmt.close();
+                        } catch (Exception ex) {
+                        }
+                        System.out.println("input thread end");
+                    }
+                }
+            });
+            input.start();
+            input.join();
+
+            Thread error = new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("error thread start");
+                    BufferedReader br_err = null;
+                    PreparedStatement pstmt = connect();
+                    System.out.println("error thread connected");
+                    try {
+                        br_err = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+                        String buff = null;
+                        while ((buff = br_err.readLine()) != null) {
+                            System.out.println("Process err :" + buff);
+                            addOutput("error:" + buff, pstmt);
+                            try {
+                                Thread.sleep(100);
+                            } catch (Exception e) {
+                            }
+                        }
+                        br_err.close();
+                        System.out.println("error thread outside while");
+                    } catch (IOException ioe) {
+                        System.out.println("IO Exception caught printing process error.");
+                        ioe.printStackTrace();
+                    } catch (Exception ex) {
+                        System.out.println("Exception caught printing process error.");
+                    } finally {
+                        try {
+                            br_err.close();
+                            pstmt.close();
+                        } catch (Exception ex) {
+                        }
+                        System.out.println("error thread end");
+                    }
+                }
+            });
+            error.start();
+            error.join();
+        } catch (Exception ex) {
+            System.out.println(ex.getLocalizedMessage());
+        }
+        
+        System.out.println("executeCommand thread end");
+    }
+
+    public static boolean isWindows() {
+        if (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static PreparedStatement connect() {
+        try {
+            String dbUserName = "hermes";
+            String dbPassword = "HERMES";
+            OracleDataSource ods = new OracleDataSource();
+            ods.setURL("jdbc:oracle:thin:@//win7:1521/ora11g");
+            ods.setUser(dbUserName);
+            ods.setPassword(dbPassword);
+            Connection conn = ods.getConnection();
+            String sql = "INSERT INTO dbmsoutput(message) VALUES (?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            return pstmt;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+
+    }
+
+    public static void addOutput(String message, PreparedStatement pstmt) {
+        try {
+            pstmt.setString(1, message);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public static void main(String args[]) {
+        Host host = new Host();
+        //ALL commands must can be found when runned from a command window
+        //or to be put in system path
+        //host.executeCommand("dir C:");
+        host.executeCommand("ping localhost");
+        //host.executeCommand("tnsping ora11g");
+    }
+}
+/
+
+

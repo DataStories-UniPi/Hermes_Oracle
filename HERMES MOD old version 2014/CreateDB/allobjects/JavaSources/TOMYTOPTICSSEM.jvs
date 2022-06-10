@@ -1,0 +1,82 @@
+Prompt Java Source TOMYTOPTICSSEM;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED TOMYTOPTICSSEM as import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.Calendar;
+import java.util.Date;
+import oracle.sql.ARRAY;
+import oracle.sql.STRUCT;
+
+public class ToMyTopticsSem
+{
+  private static int semtraj_id;
+  private static int o_id;
+  private static int srid;
+  private static String sem_traj_tag;
+  
+  public static void entry()
+  {
+  }
+  
+  public static void writeFile(String filename, oracle.sql.ARRAY semmpoints) throws Exception{
+    BufferedWriter out = new BufferedWriter(new FileWriter(filename));
+    
+    int nDimensions = 2;
+    //out.write(String.valueOf(nDimensions));
+    //out.newLine();
+    int nTrajs= semmpoints.length();
+    //out.write(String.valueOf(nTrajs));
+    //out.newLine();
+    
+    for (int i = 0; i < nTrajs; i++) {
+      STRUCT semmpoint = (STRUCT) semmpoints.getOracleArray()[i];
+      
+      if (semmpoint.getAttributes()[0] != null)
+        sem_traj_tag = semmpoint.getAttributes()[0].toString();
+      if (semmpoint.getAttributes()[1] != null)
+        srid = Integer.valueOf(semmpoint.getAttributes()[1].toString());
+      if (semmpoint.getAttributes()[3] != null)
+        o_id = Integer.valueOf(semmpoint.getAttributes()[3].toString());
+      if (semmpoint.getAttributes()[4] != null)
+        semtraj_id = Integer.valueOf(semmpoint.getAttributes()[4].toString());
+        
+      ARRAY episodes = (ARRAY) semmpoint.getAttributes()[2];
+      int nEpis = episodes.length();
+      
+      if (nEpis > 0){
+        out.write(sem_traj_tag+" "+o_id+" "+semtraj_id + " " + srid + " ");
+        
+        for (int s = 0; s < nEpis; s++) {
+          STRUCT episode = (STRUCT)episodes.getOracleArray()[s];
+          
+          STRUCT mbb = (STRUCT) episode.getAttributes()[3];
+          STRUCT minpoint = (STRUCT) mbb.getAttributes()[0];
+          STRUCT maxpoint = (STRUCT) mbb.getAttributes()[1];
+          
+          STRUCT mint = (STRUCT) minpoint.getAttributes()[2];
+          STRUCT maxt = (STRUCT) maxpoint.getAttributes()[2];
+          
+          out.write(episode.getAttributes()[0].toString()+" ");
+          out.write(episode.getAttributes()[1].toString()+" ");
+          out.write(episode.getAttributes()[2].toString()+" ");
+          
+          out.write(minpoint.getAttributes()[0].toString()+" "+minpoint.getAttributes()[1].toString()+" ");
+          out.write(mint.getAttributes()[0].toString()+"-"+mint.getAttributes()[1].toString()+"-"+mint.getAttributes()[2].toString()+"-"+mint.getAttributes()[3].toString()+"-"+
+            mint.getAttributes()[4].toString()+"-"+mint.getAttributes()[5].toString()+" ");
+            
+          out.write(maxpoint.getAttributes()[0].toString()+" "+maxpoint.getAttributes()[1].toString()+" ");
+          out.write(maxt.getAttributes()[0].toString()+"-"+maxt.getAttributes()[1].toString()+"-"+maxt.getAttributes()[2].toString()+"-"+maxt.getAttributes()[3].toString()+"-"+
+            maxt.getAttributes()[4].toString()+"-"+maxt.getAttributes()[5].toString()+" ");
+            
+        }
+        out.newLine();
+      }
+    
+    }
+    out.close();
+    //System.out.println(filename);
+  }
+
+}
+/
+
+

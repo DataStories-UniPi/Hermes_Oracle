@@ -1,0 +1,137 @@
+Prompt Java Source STOPFINDER_APPLICATION;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_APPLICATION as package stopfinder;
+
+import java.awt.Rectangle;
+import java.io.File;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.LinkedList;
+
+
+import stopfinder.LoadProperty;
+import stopfinder.ReadData;
+
+import stopfinder.CompareCluster;
+import stopfinder.CreateStopMove;
+import stopfinder.OpticsAlgorithm;
+import stopfinder.CartesianPoint;
+import stopfinder.DataPoint;
+import stopfinder.Distance;
+import stopfinder.LatLong;
+
+/**
+ * Class to start the application
+ */
+
+public class Application {
+	
+	public static void main(String args[]) throws ParseException {
+		/*
+		LatLong alt = new LatLong(54.076898,12.106788);
+		LatLong newP = new LatLong(54.076860,12.106604);
+		Distance gcd = new Distance();
+		System.out.println(gcd.computeDistance(alt, newP));
+		CartesianPoint cpOld = new CartesianPoint(2,2);
+		CartesianPoint cpNew = new CartesianPoint(4,4);
+		System.out.println(gcd.computeDistance(cpOld, cpNew));
+		*/
+		//System.out.println(System.getProperty("user.dir"));
+        //C:\APP\STYLIANOS\PRODUCT\11.2.0\DBHOME_1//
+		//System.out.println(args[0]);//dir
+        //System.out.println(args[1]);//config.ini
+        //System.out.println(args[2]);//eps
+        //System.out.println(args[3]);//minTime
+        //System.out.println(args[4]);//alpha
+		HashMap<String, String> runtimeVariables = LoadProperty.getInstance()
+		.loadPropertyFile(new File(args[0]+"/"+args[1])); //load property
+		
+		try{
+            File dir = new File(args[0]);
+            for (File file : dir.listFiles()){//for all files in user dir
+                if ( file.getName().endsWith(".dat") ){//if file is a dataset
+                    //System.out.println(file.getParent());
+                    runtimeVariables.put("dataset", file.getAbsolutePath());//update dataset name
+                    runtimeVariables.put("orderedList", "/order"+file.getName().
+                            substring(0, file.getName().length() - 4)+".csv" );//update output orderList name
+    				//System.out.println(runtimeVariables.get("numberColumns"));
+                    //overwrite config.ini variables
+                    //runtimeVariables.put("eps", args[2]);
+                    
+                    
+                    
+                    ReadData readData = new ReadData(runtimeVariables);
+                    readData.readData();
+    				
+                    // configure eps and minTime
+                    //readData.getMintime();
+                    //readData.getEps();
+    				
+                    OpticsAlgorithm op = new OpticsAlgorithm(runtimeVariables,readData.getDataPoints());
+    				
+                    //normal optics run
+                    op.run();
+                    //write end
+                    op.writeOrderInFile(runtimeVariables);
+    				
+                    //can be used for test running without running the Optics, already determined result are used
+                    op.readOrderdList(runtimeVariables, readData.getDataPoints());
+    								
+                    //create the first stops
+    				
+                    CreateStopMove cStMo = new CreateStopMove(op.getOrderdlist());
+    				
+                    /*
+                    Rectangle r1 = new Rectangle(2,3,2,2);
+                    Rectangle r2 = new Rectangle(3,2,2,2);
+                    Rectangle r3 = cStMo.intersection(r1, r2);
+                    //Correct result is 1 
+                    System.out.println(r3.width*r3.height);
+    				
+                    Rectangle r1 = new Rectangle(-28,65,56,105);
+                    Rectangle r2 = new Rectangle(-24,16,28,33);
+                    Rectangle r3 = cStMo.intersection(r1, r2);
+                    //Correct result is 1 
+                    System.out.println(r3.width*r3.height);
+                    */
+                    /*
+                    LinkedList<DataPoint> myOrderList = op.getOrderdlist();
+                    double cur_eps=0;double max_eps=0;double opt_eps=0;double avg_eps=0;double total_eps=0;
+                    for (int i = 0; i < myOrderList.size(); i++){
+                        cur_eps=myOrderList.get(i).getReachability();
+                        if(cur_eps<0) cur_eps=0;
+                        if(cur_eps>max_eps) max_eps=cur_eps;
+                        total_eps+=cur_eps;
+                    }
+                    avg_eps=total_eps/myOrderList.size();
+                    opt_eps=(avg_eps/max_eps)*readData.getEps();
+    				
+                    runtimeVariables.put("alpha", String.valueOf(opt_eps));//update alpha
+                    */
+                    cStMo.createStopMove(Double.parseDouble(runtimeVariables.get("alpha")));
+    				
+                    //cStMo.runRecomputation(runtimeVariables);
+    								
+                    //CompareCluster compCluster = new CompareCluster(cStMo.getStopMove());
+                    //compCluster.compare(Integer.parseInt(runtimeVariables.get("numberColumns")));
+    				
+                    cStMo.reduceSquareIntervals();
+                    //write debug				
+                    cStMo.writeStopMove(runtimeVariables);
+                    //cStMo.writeStopMoveMean(runtimeVariables);
+                    //System.out.println(runtimeVariables.get("dataset"));
+                    cStMo.writeSequence(runtimeVariables.get("dataset"));
+    				
+                    //op.writeOrderInFile(runtimeVariables);
+                    //System.out.println("ready");
+                }			
+            }
+         }catch (Exception e) {
+            System.err.println("Caught Exception: " + e.getMessage());
+            e.printStackTrace();
+         }
+		System.out.println("great");
+	}
+}
+/
+
+

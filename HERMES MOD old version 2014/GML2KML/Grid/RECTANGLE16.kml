@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml>
+<Document>
+	<name>Polygon.kml</name>
+	<Style id="transGreenPoly">
+		<LineStyle>
+			<width>1.5</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>7d00ff00</color>
+		</PolyStyle>
+	</Style>
+	<Placemark>
+		<name>Absolute</name>
+		<styleUrl>#transGreenPoly</styleUrl>
+		<Polygon>
+			<tessellate>1</tessellate>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>9.24129619360125,45.3696852099318 9.30514629856436,45.3695324788528 9.3053885827189,45.4145380327747 9.24148778255139,45.4146910023874 9.24129619360125,45.3696852099318 </coordinates>
+
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>		
+	</Placemark>
+</Document>
+</kml>

@@ -1,0 +1,20 @@
+Prompt Java Source STOPFINDER_SPATIAL;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_SPATIAL as package stopfinder;
+
+public interface Spatial {
+
+	public double getX();
+
+	public void setX(double x);
+
+	public double getY();
+
+	public void setY(double y);
+	
+	public double distanceTo(Spatial newP);
+	
+	
+}
+/
+
+

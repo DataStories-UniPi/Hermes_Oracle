@@ -1,0 +1,28 @@
+Prompt Table ATTIKI_REPORTER_MO;
+CREATE TABLE ATTIKI_REPORTER_MO
+(
+  ID             NUMBER                         NOT NULL,
+  REPNUM         NUMBER,
+  TIME           NUMBER,
+  CLASS          NUMBER,
+  X              NUMBER,
+  Y              NUMBER,
+  DBTIME         DATE,
+  REALX          NUMBER,
+  REALY          NUMBER,
+  EDGEID         NUMBER,
+  NEXTNODEX      NUMBER,
+  NEXTNODEY      NUMBER,
+  REMAININGTIME  NUMBER,
+  SPEED          NUMBER,
+  DONEDIST       NUMBER,
+  DONEDISTREAL   NUMBER,
+  APPLETTIME     NUMBER,
+  REALTIME       NUMBER,
+  EPISODESEMS    VARCHAR2(500 BYTE),
+  SCENARIOID     NUMBER
+)
+TABLESPACE USERS
+/
+
+

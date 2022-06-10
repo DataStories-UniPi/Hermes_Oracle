@@ -1,0 +1,72 @@
+Prompt Java Source TOMYTOPTICS;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED TOMYTOPTICS as import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.Calendar;
+import java.util.Date;
+import oracle.sql.ARRAY;
+import oracle.sql.STRUCT;
+
+public class ToMyToptics
+{
+  private static int traj_id;
+  private static int srid;
+  
+  public static void entry()
+  {
+  }
+  
+  public static void writeFile(String filename, oracle.sql.ARRAY mpoints) throws Exception{
+    BufferedWriter out = new BufferedWriter(new FileWriter(filename));
+    
+    int nDimensions = 2;
+    //out.write(String.valueOf(nDimensions));
+    //out.newLine();
+    int nTrajs= mpoints.length();
+    //out.write(String.valueOf(nTrajs));
+    //out.newLine();
+    
+    for (int i = 0; i < nTrajs; i++) {
+      STRUCT mpoint = (STRUCT) mpoints.getOracleArray()[i];
+      
+      ARRAY u_tab = (ARRAY) mpoint.getAttributes()[0];
+      
+      if (mpoint.getAttributes()[1] != null)
+        traj_id = Integer.valueOf(mpoint.getAttributes()[1].toString());
+      if (mpoint.getAttributes()[2] != null)
+        srid = Integer.valueOf(mpoint.getAttributes()[2].toString());
+      int nSegs = u_tab.length();
+      
+      if (nSegs > 0){
+        out.write(traj_id + " " + traj_id + " " + srid + " ");
+        for (int s = 0; s < nSegs; s++) {
+          STRUCT unit_mpoint = (STRUCT)u_tab.getOracleArray()[s];
+          STRUCT p = (STRUCT) unit_mpoint.getAttributes()[0];
+          STRUCT m = (STRUCT) unit_mpoint.getAttributes()[1];
+          if (s < nSegs-1) {
+            STRUCT b = (STRUCT) p.getAttributes()[0];
+            //out.write(computeTime(b)+" ");
+            out.write(m.getAttributes()[0].toString()+" ");
+            out.write(m.getAttributes()[1].toString()+" ");
+            out.write(b.getAttributes()[0].toString()+"-"+b.getAttributes()[1].toString()+"-"+b.getAttributes()[2].toString()+"-"+b.getAttributes()[3].toString()+"-"+
+                b.getAttributes()[4].toString()+"-"+b.getAttributes()[5].toString()+" ");
+          } else {
+            STRUCT e = (STRUCT) p.getAttributes()[1];
+            //out.write(computeTime(e)+" ");
+            out.write(m.getAttributes()[2].toString()+" ");
+            out.write(m.getAttributes()[3].toString()+" ");
+            out.write(e.getAttributes()[0].toString()+"-"+e.getAttributes()[1].toString()+"-"+e.getAttributes()[2].toString()+"-"+e.getAttributes()[3].toString()+"-"+
+                e.getAttributes()[4].toString()+"-"+e.getAttributes()[5].toString()+" ");
+          }
+        }
+        out.newLine();
+      }
+    
+    }
+    out.close();
+    //System.out.println(filename);
+  }
+
+}
+/
+
+

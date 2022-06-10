@@ -1,0 +1,8 @@
+Prompt Non-Foreign Key Constraints on Table HIST;
+ALTER TABLE HIST ADD (
+  CONSTRAINT HIST_PK
+ PRIMARY KEY
+ (USER_ID, ID)
+    USING INDEX 
+    TABLESPACE USERS)
+/

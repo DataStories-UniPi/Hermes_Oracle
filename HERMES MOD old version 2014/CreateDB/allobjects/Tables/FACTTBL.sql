@@ -1,0 +1,19 @@
+Prompt Table FACTTBL;
+CREATE TABLE FACTTBL
+(
+  TIME_ID            INTEGER,
+  SPACE_ID           INTEGER,
+  TRAJECTORIES       INTEGER,
+  USERS              INTEGER,
+  DISTANCE_TRAVELED  NUMBER(22,2),
+  TIME_DURATION      INTEGER,
+  SPEED              INTEGER,
+  ACCELERATION       INTEGER,
+  CROSSX             NUMBER,
+  CROSSY             NUMBER,
+  CROSST             NUMBER
+)
+TABLESPACE USERS
+/
+
+

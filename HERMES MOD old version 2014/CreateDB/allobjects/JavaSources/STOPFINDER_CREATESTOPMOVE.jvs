@@ -1,0 +1,684 @@
+Prompt Java Source STOPFINDER_CREATESTOPMOVE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_CREATESTOPMOVE as package stopfinder;
+
+import java.awt.Rectangle;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+import stopfinder.CartesianPoint;
+import stopfinder.DataPoint;
+import stopfinder.Entity;
+import stopfinder.Move;
+import stopfinder.Sequence;
+import stopfinder.Stop;
+
+public class CreateStopMove {
+	
+	
+	private LinkedList<DataPoint> orderdList;
+	
+	private LinkedList<Entity> stop_move;
+	
+	private LinkedList<SquareInterval> squareIntervals;
+	
+	
+	//The list of sequences for printing all the sequences
+	private LinkedList<Sequence> allSequences = new LinkedList<Sequence>();
+	
+	private final int epsDenominator = 2;
+	
+	private double alpha = 0;
+	
+	
+	public CreateStopMove(LinkedList<DataPoint> order) {
+		orderdList = order;
+		stop_move = new LinkedList<Entity>();
+	}
+	
+	
+	/**
+	 * Creates the basic Stops for further splitting
+	 */
+	public void createStopMove(double alpha) {
+		this.alpha = alpha;
+		double currentReach = -1;
+		DataPoint oldPoint = null;
+		int counter = 0;
+		// next Cluster
+		Entity nextEntity = null;
+		Sequence nextSq = null;
+		
+		for (Iterator it = orderdList.iterator(); it.hasNext();) {
+			DataPoint dp = (DataPoint) it.next();
+			currentReach = dp.getReachability();
+			
+			if(currentReach <= alpha && currentReach != -1) {
+				// it's part of a stop
+				if(nextEntity == null) {
+					counter++;
+					nextSq = new Sequence(counter);
+					nextEntity = new Stop(counter);
+					nextEntity.isStop(true);
+				}
+				nextEntity.addPoint(dp);
+				nextSq.add(dp);
+			}
+			else if(currentReach > alpha && oldPoint != null) {
+				if(oldPoint.getReachability() <= alpha && oldPoint.getReachability() != -1) {
+					computeVelocity(nextEntity);
+					nextEntity.setFeature("stable");
+					stop_move.add(nextEntity);
+					allSequences.add(nextSq);
+					nextSq = null;
+					nextEntity = null;
+				}
+			}
+			//add the distance of the new Point to the entity distance
+			if(nextEntity != null && nextEntity.getNumberOfPoints() > 0) {
+				nextEntity.addDistance(dp.getVector().distanceTo(
+						nextEntity.getLastPoint().getVector()));
+			}
+			
+			oldPoint = dp; 
+			
+		}
+		//end loop
+		if(nextEntity != null) {
+			stop_move.add(nextEntity);
+			allSequences.add(nextSq);
+		}
+			
+	}
+	
+	
+	
+	
+	/**
+	 * Starts the splitting of the stops and checks whether a entity is robust. 
+	 * @param runtimeVariables
+	 */
+	public void runRecomputation(HashMap<String, String> runtimeVariables) {
+		double eps = Double.parseDouble(runtimeVariables.get("eps"));
+		//divide by 2 
+		double newEps = eps/epsDenominator;
+		LinkedList<Entity> newCluster = stop_move;
+		LinkedList<Entity> tmpCluster;
+		while(newEps > 100) {
+			tmpCluster = new LinkedList<Entity>();
+			for (Iterator it = newCluster.iterator(); it.hasNext();) {
+				Entity st = (Entity) it.next();
+				//if it is a move (noise) than skip the step
+				if(!st.isStop()) {
+					//do nothing
+				}
+				else {
+					LinkedList<Entity> subList  = recomputeStop(st, newEps);
+					computeStability(subList, st);
+					tmpCluster.addAll(subList);
+					
+					
+				}
+				
+			}
+			newCluster = tmpCluster;
+			newEps = newEps/epsDenominator;
+			
+			
+		}
+		
+		System.out.println("test");
+		
+	}
+	
+	
+	/**
+	 * Computes the new Cluster with respect to the decreased eps
+	 * @param st
+	 * @param newEps
+	 * @return
+	 */
+	private LinkedList<Entity> recomputeStop(Entity st, double newEps) {
+		LinkedList<Entity> subList = new LinkedList<Entity>();
+		double tmpEps = newEps;
+		int counter =1;
+		int pointCount = 0;
+		Entity tmpStop = new Stop(counter);
+		
+		for (Iterator it = st.getPoints().iterator(); it.hasNext();) {
+			//Control the eps
+			//if(tmpEps > epsDenominator*newEps) {
+				//tmpEps = newEps;
+			//}
+			
+			DataPoint dp = (DataPoint) it.next();
+			//Check if a new Cluster has to be created
+			if(dp.getReachability() > tmpEps) {
+				subList.add(tmpStop);
+				counter = counter+1;
+				tmpStop = new Stop(counter);
+				tmpEps = tmpEps + newEps;
+			}
+			
+			tmpStop.addPoint(dp);
+			pointCount  = pointCount+1;
+		}
+		subList.add(tmpStop);
+		
+		if(pointCount != st.getNumberOfPoints()) {
+			System.out.println("Error, some points disappeared");
+		}
+		return subList;
+		
+	}
+	
+	
+	
+	
+	
+	/**
+	 * Computes whether a new Cluster is still stabel, see cluster splitting approach for more details
+	 * Under construction!!!
+	 * @param newCl
+	 * @param oldCl
+	 */
+	private void computeStability(LinkedList<Entity> newCl,Entity oldCl ) {
+		
+		//check for normal and unnormal case
+		if(newCl.size() < epsDenominator) {
+			//unnormal case
+		}
+		else {
+			//normal
+			
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public LinkedList<Entity> getStopMove() {
+		return stop_move;
+	}
+	
+	
+	public void computeVelocity(Entity en) {
+		double distance;
+		en.setStartTime(en.getPoint(0).getTime());
+		en.setEndTime(en.getPoint(en.getNumberOfPoints()-1).getTime());
+		distance = en.getDistance();
+		en.setVelocity(distance/(Math.abs(en.getStartTime()-en.getEndTime())));	
+		
+	}
+	
+	/**
+	 * Write the stops in a file
+	 * @param runtimeVariables
+	 */
+	
+	/*
+	public void writeStopMove(HashMap<String, String> runtimeVariables) {
+		String delimiter = ",";
+		File file = new File(runtimeVariables.get("outputStop"));
+	    FileOutputStream fos = null;
+	    BufferedOutputStream bos = null;
+	    DataOutputStream dos = null;
+	    try {
+	    	fos = new FileOutputStream(file);
+	    	bos = new BufferedOutputStream(fos);
+	        dos = new DataOutputStream(bos);
+	        
+	        for (int i = 0; i < stop_move.size(); i=i+1) {
+	        	//only stops
+	        	//if(stop_move.get(i).isStop()) {
+	        		StringBuffer stBuffer = new StringBuffer();
+		        	stBuffer.append(i);
+		        	SquareInterval sqI = computeMeanInterval(stop_move.get(i));
+		        	stBuffer.append(delimiter+sqI.leftUp.getX()+delimiter+sqI.leftUp.getY());
+		        	stBuffer.append("\r\n");
+		        	stBuffer.append(i);
+		        	stBuffer.append(delimiter+sqI.leftDown.getX()+delimiter+sqI.leftDown.getY());
+		        	stBuffer.append("\r\n");
+		        	stBuffer.append(i);
+		        	stBuffer.append(delimiter+sqI.rightDown.getX()+delimiter+sqI.rightDown.getY());
+		        	stBuffer.append("\r\n");
+		        	stBuffer.append(i);
+		        	stBuffer.append(delimiter+sqI.rightUp.getX()+delimiter+sqI.rightUp.getY());
+		        	stBuffer.append("\r\n");
+		        	
+		        	// mean
+		        	//stBuffer.append(i);
+		        	//stBuffer.append(delimiter+sqI.mean.getX()+delimiter+sqI.mean.getY());
+		        	//stBuffer.append("\r\n");
+					dos.writeBytes(stBuffer.toString());
+	        	//}
+	        	
+			}
+	        
+	        dos.close();
+	        bos.close();
+	        fos.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+	}
+	*/
+	
+	
+	/**
+	 * Writes the stop into a file by using the squares of. Each stop is presented by the surrounding square
+	 * Normal method if you want to use the suqare method   
+	 */
+	public void writeStopMove(HashMap<String, String> runtimeVariables) {
+		String delimiter = ",";
+		String home = System.getProperty("user.dir");
+		String fileName = runtimeVariables.get("outputStop");
+		String str = home+fileName;
+		//File file = new File(home+fileName);
+        File filetmp = new File(runtimeVariables.get("dataset"));
+        File file = new File(filetmp.getParent()+fileName);
+		FileOutputStream fos = null;
+		BufferedOutputStream bos = null;
+		DataOutputStream dos = null;
+		try {
+			fos = new FileOutputStream(file);
+			bos = new BufferedOutputStream(fos);
+			dos = new DataOutputStream(bos);
+
+			for (int i = 0; i < squareIntervals.size(); i = i + 1) {
+				StringBuffer stBuffer = new StringBuffer();
+				SquareInterval sqI = squareIntervals.get(i);
+				if (sqI.replaced == false) {
+					stBuffer.append(i);
+					stBuffer.append(delimiter + sqI.rectangle.getX() + delimiter + sqI.rectangle.getY());
+					stBuffer.append("\r\n");
+					stBuffer.append(i);
+					stBuffer.append(delimiter + sqI.rectangle.getX() + delimiter
+							+ (sqI.rectangle.getY() - sqI.rectangle.getHeight()));
+					stBuffer.append("\r\n");
+					stBuffer.append(i);
+					stBuffer.append(delimiter + (sqI.rectangle.getX() + sqI.rectangle.getWidth()) + delimiter
+							+ (sqI.rectangle.getY() - sqI.rectangle.getHeight()));
+					stBuffer.append("\r\n");
+					stBuffer.append(i);
+					stBuffer.append(delimiter + (sqI.rectangle.getX() + sqI.rectangle.getWidth()) + delimiter
+							+ sqI.rectangle.getY());
+					stBuffer.append("\r\n");
+					
+					//the start of the rectangle for closing it
+					stBuffer.append(i);
+					stBuffer.append(delimiter + sqI.rectangle.getX() + delimiter + sqI.rectangle.getY());
+					stBuffer.append("\r\n");
+
+					// mean
+					// stBuffer.append(i);
+					// stBuffer.append(delimiter+sqI.mean.getX()+delimiter+sqI.mean.getY());
+					// stBuffer.append("\r\n");
+					
+				}
+				else {
+					
+					stBuffer.append(i);
+					int xMiddle = sqI.rectangle.x+(sqI.rectangle.width/2);
+					int yMiddle = sqI.rectangle.y-(sqI.rectangle.height/2);
+					stBuffer.append(delimiter+xMiddle+delimiter+yMiddle);
+					stBuffer.append("\r\n");
+					
+				}
+				dos.writeBytes(stBuffer.toString());
+
+			}
+
+			dos.close();
+			bos.close();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		} catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+	}
+
+	/**
+	 * creates all square intervals, and tries to reduce the number of intervals
+	 * by looking for intersections between two consecutive intervals.
+	 */
+	public void reduceSquareIntervals() {
+		// intersection threshold in percentage
+		double threshold = 70;
+		// create the intervals
+		squareIntervals = new LinkedList<SquareInterval>();
+		for (int i = 0; i < stop_move.size(); i = i + 1) {
+			squareIntervals.add(computeMeanInterval(stop_move.get(i)));
+		}
+
+		Rectangle intersec;
+		double sizeIntersec;
+		Iterator it = squareIntervals.iterator(); 
+		boolean fromBeginning = false;
+		while (it.hasNext()) {
+			fromBeginning = false;
+			SquareInterval square = (SquareInterval) it.next();
+			//if (square.replaced == false) {
+				// the square has not been touched before
+				for (Iterator it2 = squareIntervals.iterator(); it2.hasNext();) {
+					SquareInterval square2 = (SquareInterval) it2.next();
+					if(square2.rectangle.x == -24) {
+						System.out.println("test");
+					}
+					if (square.rectangle.equals(square2.rectangle) == false) {
+
+						//intersec = square.rectangle.intersection(square2.rectangle);
+						intersec = intersection(square.rectangle, square2.rectangle);
+						//boolean inter = square.rectangle.intersects(square2.rectangle);
+						if (intersec == null) {
+							// no intersection at all
+						} 
+						else {
+							sizeIntersec = Math.abs(intersec.getHeight() * intersec.getWidth());
+							double tmpSize = Math.abs(square.rectangle.getHeight() * square.rectangle.getWidth());
+							double tmpSize2 = Math.abs(square2.rectangle.getHeight() * square2.rectangle.getWidth());
+							if (sizeIntersec >= tmpSize) {
+								// the square rectangle is a subset of the square2 rectangle
+								square.rectangle = square2.rectangle;
+								square.replaced = true;
+								//squareIntervals.remove(square);
+								fromBeginning = true;
+								break;
+							} else if (sizeIntersec >= tmpSize2) {
+								// the square2 rectangle is a subset of the square rectangle
+								square2.rectangle = square.rectangle;
+								square2.replaced = true;
+								//squareIntervals.remove(square2);
+								fromBeginning = true;
+								break;
+							} else {
+								// the intersection is a proper intersection of the rectangles
+								double percent = (sizeIntersec / tmpSize) * 100;
+								double percent2 = (sizeIntersec / tmpSize2) * 100;
+								if (percent >= threshold) {
+									Rectangle union = square.rectangle.union(square2.rectangle);
+									square.rectangle = union;
+									square2.rectangle = union;
+									//square2.replaced = true;
+									//square.replaced = true;
+									//squareIntervals.remove(square);
+									fromBeginning = true;
+									break;
+								}
+								if (percent2 >= threshold) {
+									Rectangle union = square.rectangle.union(square2.rectangle);
+									square.rectangle = union;
+									square2.rectangle = union;
+									square2.replaced = true;
+									//squareIntervals.remove(square2);
+									fromBeginning = true;
+									break;
+									//square.replaced = true;
+								}
+							}
+						}
+					}
+
+				}//end second loop
+				if(fromBeginning == true) {
+					it = squareIntervals.iterator(); 
+				}
+				
+
+		}//end first loop
+
+		System.out.println("Debug");
+
+	}
+	
+	
+	/**
+	 * Writes the stops in a file by using the mean of the stops, 
+	 * The methdod is very inprecise!
+	 * @param runtimeVariables
+	 */
+	
+	public void writeStopMoveMean(HashMap<String, String> runtimeVariables) {
+		String delimiter = ",";
+		String home = System.getProperty("user.dir");
+		String fileName = runtimeVariables.get("outputStop");
+		String str = home+fileName;
+		File file = new File(home+fileName);
+	    FileOutputStream fos = null;
+	    BufferedOutputStream bos = null;
+	    DataOutputStream dos = null;
+	    try {
+	    	fos = new FileOutputStream(file);
+	    	bos = new BufferedOutputStream(fos);
+	        dos = new DataOutputStream(bos);
+	        
+	        for (int i = 0; i < stop_move.size(); i=i+1) {
+	        	//only stops
+	        	//if(stop_move.get(i).isStop()) {
+	        		StringBuffer stBuffer = new StringBuffer();
+		        	stBuffer.append(i);
+		        	CartesianPoint cp = computeMeanOfStop(stop_move.get(i));
+		        	stBuffer.append(delimiter+cp.getX()+delimiter+cp.getY());
+		        	stBuffer.append("\r\n");
+					dos.writeBytes(stBuffer.toString());
+	        	//}	
+			}
+	        
+	        dos.close();
+	        bos.close();
+	        fos.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File hasn't been found!!!");
+		}
+		catch (IOException e) {
+			System.out.println("Couldn't read the file correctly");
+		}
+	}
+	
+	
+	/**
+	 * Write the list of sequences in a file
+	 * @param runtimeVariables
+	 */
+	
+	public void writeSequence(String datasetname) {
+		//Sequence.writeReachability(allSequences);
+		Sequence.writeSequence(allSequences, datasetname);
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Computes the mean position of a stop, it's just a simple way to make a stop visible
+	 * @param en
+	 * @return
+	 */
+	private CartesianPoint computeMeanOfStop(Entity en) {
+		CartesianPoint cp = null;
+		double x = 0; 
+		double y = 0;
+		for (int i = 0; i < en.getNumberOfPoints(); i++) {
+			x = x + en.getPoint(i).getVector().getSpatial().getX();
+			y = y + en.getPoint(i).getVector().getSpatial().getY();
+		}
+		
+		cp = new CartesianPoint(x/en.getNumberOfPoints(),y/en.getNumberOfPoints());
+		return cp;
+	}
+	
+	
+	
+	/**
+	 * Computes the square interval of a cluster, in order to visuals
+	 * @param en
+	 * @return
+	 */
+	private SquareInterval computeMeanInterval(Entity en) {
+		double x = 0; 
+		double y = 0;
+		double sumX = 0;
+		double sumY = 0;
+		for (int i = 0; i < en.getNumberOfPoints(); i++) {
+			x = x + en.getPoint(i).getVector().getSpatial().getX();
+			y = y + en.getPoint(i).getVector().getSpatial().getY();
+		}
+		double meanX = x/en.getNumberOfPoints();
+		double meanY = y/en.getNumberOfPoints();
+		double tmp;
+		
+		for (int i = 0; i < en.getNumberOfPoints(); i++) {
+			tmp = (en.getPoint(i).getVector().getSpatial().getX()-meanX);
+			sumX = sumX + Math.pow(tmp, 2);
+			
+			tmp = (en.getPoint(i).getVector().getSpatial().getY()-meanY);
+			sumY = sumY + Math.pow(tmp, 2);
+		}
+		
+		sumX = Math.sqrt(sumX/en.getNumberOfPoints());
+		sumY = Math.sqrt(sumY/en.getNumberOfPoints());
+		SquareInterval sqI = new SquareInterval(sumY,sumX,meanX,meanY);
+		sqI.computeInterval();
+		return sqI;
+		
+	}
+	
+	
+	/**
+	 *
+	 * Note: A square need at least for points in a cartesian system
+	 */
+	
+	private class SquareInterval {
+		private double sdX,sdY,meanX,meanY;
+		//Imagine a square represented by 4 points in a cartesian system
+		public CartesianPoint leftDown,leftUp,rightDown,rightUp,mean; 
+		public Rectangle rectangle;
+		
+		public boolean replaced = false;
+		public SquareInterval(double y, double x, double meanX, double meanY) {
+			sdX = x;
+			sdY = y;
+			this.meanX = meanX;
+			this.meanY = meanY;
+		}
+		
+		public void computeInterval() {
+			//top-left = (x,y) -> start of a rectangle
+			int x = (int) (meanX-sdX);
+			int y = (int) (meanY+sdY);
+			int width = (int) Math.abs((meanX+sdX)-x);
+			int height = (int) Math.abs((meanY-sdY)-y);
+			
+			rectangle = new Rectangle(x,y,width,height);
+			
+			
+			leftDown = new CartesianPoint(meanX-sdX,meanY-sdY);
+			leftUp = new CartesianPoint(meanX-sdX,meanY+sdY);
+			rightDown = new CartesianPoint(meanX+sdX,meanY-sdY);
+			rightUp = new CartesianPoint(meanX+sdX,meanY+sdY);
+			mean = new CartesianPoint(meanX,meanY);
+			
+		}
+		
+	}
+	
+	
+	
+	public Rectangle intersection(Rectangle r1,Rectangle r2 ) {
+		Rectangle rec = null;
+		if(intersects(r1,r2) == true) {
+			int left,right,up,down,union;
+			int uWr2,uWr1,areaR1,areaR2,intersec;
+			areaR1 = r1.width*r1.height;
+			areaR2 = r2.width*r2.height;
+			if(r1.x <= r2.x) {
+				left = r2.x;
+			}
+			else left = r1.x;
+			
+			if(r1.y >= r2.y) {
+				up = r2.y;
+			}
+			else up = r1.y;
+			
+			if(r1.x+r1.width >= r2.x+r2.width) {
+				right = r2.x+r2.width;
+			}
+			else right = r1.x+r1.width;
+			
+			if(r1.y-r1.height <= r2.y-r2.height) {
+				down = r2.y-r2.height;
+			}
+			else down = r1.y-r1.height;
+			
+			
+			rec = new Rectangle(left,up,Math.abs(left-right),Math.abs(up-down));
+			
+		}
+		return rec;
+		
+	}
+	
+	public boolean intersects(Rectangle r1,Rectangle r2) {
+        int r1w = r1.width;
+        int r1h = r1.height;
+        int r2w = r2.width;
+        int r2h = r2.height;
+        
+        
+        int r1x = r1.x;
+        int r1y = r1.y;
+        int r2x = r2.x;
+        int r2y = r2.y;
+        
+        if((r1x + r1w) < r2x) return false;
+        //r1 is completely to the left of r2
+        
+        if((r2x+r2w) < r1x) return false;
+        //r1 is completely to the right of r2
+        
+        if((r1y-r1h) > r2y) return false;
+        
+        if((r2y-r2h) > r1y) return false;
+        
+        return true;
+        
+        	
+    }
+	
+	
+	
+}
+/
+
+

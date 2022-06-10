@@ -1,0 +1,5 @@
+Prompt Type TBX;
+CREATE OR REPLACE TYPE tbX AS Varray(3) OF NUMBER;
+/
+
+

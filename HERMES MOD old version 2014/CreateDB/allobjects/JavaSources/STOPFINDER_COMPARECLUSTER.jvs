@@ -1,0 +1,80 @@
+Prompt Java Source STOPFINDER_COMPARECLUSTER;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_COMPARECLUSTER as package stopfinder;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+
+import stopfinder.Entity;
+
+public class CompareCluster {
+
+	
+	LinkedList<Entity> entities;
+	double [] distributionValues;
+	
+	public CompareCluster(LinkedList<Entity> cluster) {
+		this.entities = cluster;
+	}
+	
+	
+	
+	public void compare(int numberCluster) {
+		distributionValues = new double[entities.size()];
+		int [] distributionPoints = new int [numberCluster];
+		int [] seenCluster = new int [numberCluster];
+		int counter = 0;
+		for (Iterator it = entities.iterator(); it.hasNext();) {
+			Entity ent = (Entity) it.next();
+			for (int i = 0; i < ent.getNumberOfPoints(); i++) {
+				if(ent.getPoint(i).getCluster() == -1) {
+					distributionPoints[numberCluster-1] = distributionPoints[numberCluster-1]+1;
+				}
+				else {
+					distributionPoints[ent.getPoint(i).getCluster()] = distributionPoints[ent.getPoint(i).getCluster()]+1;
+				}
+			}
+			
+			int result = maxEntry(distributionPoints);
+			//actual computation
+			double temp = distributionPoints[result];
+			distributionValues[counter] = ((double)distributionPoints[result])/((double)ent.getNumberOfPoints());
+			if(distributionValues[counter] == 0) {
+				System.out.println("debug");
+			}
+			counter++;
+			emptyArray(distributionPoints);
+			
+		}
+	}
+	
+	private int maxEntry(int [] distribution) {
+		int result = -1;
+		int temp = 0;
+		for (int i = 0; i < distribution.length; i++) {
+			if(result == -1) {
+				result = i;
+				temp = distribution[i];
+			}
+			else if(temp < distribution[i]){
+				temp = distribution[i];
+				result = i;
+			}
+		}
+		
+		return result;
+	}
+	
+	private void emptyArray(int [] array) {
+		for (int i = 0; i < array.length; i++) {
+			array[i] = 0;
+		}
+	}
+	
+	public double [] getDistribution() {
+		return distributionValues;
+	}
+	
+}
+/
+
+

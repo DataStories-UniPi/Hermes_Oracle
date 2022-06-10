@@ -1,0 +1,10 @@
+Prompt Type UNIT_TAS;
+CREATE OR REPLACE TYPE UNIT_TAS AS OBJECT (
+
+u_regions UNIT_REGION,
+u_interval UNIT_INTERVAL
+
+);
+/
+
+

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+  <Document xmlns="">
+    <Folder>
+      <name>Hermes</name>
+      <Style id="blueLine">
+        <LineStyle>
+          <color>ffff0000</color>
+          <width>3</width>
+        </LineStyle>
+      </Style>
+  <Placemark><name>ID: ZXID</name><description>ZXDE</description><TimeSpan><begin>XYE1-XMO1-XDA1TXHO1:XMI1:XSE1Z</begin><end>XYE2-XMO2-XDA2TXHO2:XMI2:XSE2Z</end></TimeSpan><styleUrl>#blueLine</styleUrl><LineString><altitudeMode>relative</altitudeMode><coordinates>ZXY1,0 ZXY2,0</coordinates></LineString></Placemark>
+  XXXX
+</Folder>
+  </Document>
+</kml>

@@ -1,0 +1,128 @@
+Prompt Java Source "Host2";
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED "Host2" as import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import oracle.jdbc.pool.OracleDataSource;
+import java.sql.*;
+
+public class Host2 {
+
+    public static void executeCommand(String inputCommand) {
+        System.out.println("executeCommand thread start");
+        try {
+            List<String> command;
+            if (isWindows()) {
+                command = new ArrayList<String>();
+                command.add("cmd.exe");
+                command.add("/C");
+                command.add(inputCommand+">command.log");
+            } else {
+                System.err.println("Not a Windows system.");
+                return;
+            }
+            ProcessBuilder builder = new ProcessBuilder(command);
+            Map<String, String> environ = builder.environment();
+            builder.directory(new File(System.getProperty("user.dir")));
+            System.out.println("builder directory:"+builder.directory());
+            final Process pr = builder.start();
+            pr.waitFor();
+
+            Thread reader = new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("input thread start");
+                    BufferedReader br_in = null;
+                    PreparedStatement pstmt = connect();
+                    System.out.println("input thread connected");
+                    try {
+                        System.out.println("user directory:"+System.getProperty("user.dir"));
+                        br_in = new BufferedReader(new FileReader("command.log"));
+                        String buff = null;
+                        while ((buff = br_in.readLine()) != null) {
+                            System.out.println("Process out :" + buff);
+                            try {
+                                addOutput(buff, pstmt);
+                            } catch (Exception e) {
+                                System.err.println("Exception when inserting to db printing process input.");
+                            }
+                            try {
+                                Thread.sleep(100);
+                            } catch (Exception e) {
+                            }
+                        }
+                        br_in.close();
+                        System.out.println("input thread outside while");
+                    } catch (IOException ioe) {
+                        System.err.println("IO Exception caught printing process output.");
+                        ioe.printStackTrace();
+                    } catch (Exception ex) {
+                        System.err.println("Exception caught printing process input.");
+                    } finally {
+                        try {
+                            br_in.close();
+                            pstmt.close();
+                        } catch (Exception ex) {
+                        }
+                        System.out.println("input thread end");
+                    }
+                }
+            });
+            reader.start();
+            reader.join();
+
+
+        } catch (Exception ex) {
+            System.out.println(ex.getLocalizedMessage());
+        }
+
+        System.out.println("executeCommand thread end");
+    }
+
+    public static boolean isWindows() {
+        if (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static PreparedStatement connect() {
+        try {
+            String dbUserName = "hermes";
+            String dbPassword = "HERMES";
+            OracleDataSource ods = new OracleDataSource();
+            ods.setURL("jdbc:oracle:thin:@//win7:1521/ora11g");
+            ods.setUser(dbUserName);
+            ods.setPassword(dbPassword);
+            Connection conn = ods.getConnection();
+            String sql = "INSERT INTO dbmsoutput(message) VALUES (?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            return pstmt;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+
+    }
+
+    public static void addOutput(String message, PreparedStatement pstmt) {
+        try {
+            pstmt.setString(1, message);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public static void main(String args[]) {
+        Host2 host2 = new Host2();
+        //ALL commands must can be found when runned from a command window
+        //or to be put in system path
+        //host.executeCommand("dir C:");
+        host2.executeCommand("ping localhost");
+        //host.executeCommand("tnsping ora11g");
+    }
+}
+/
+
+

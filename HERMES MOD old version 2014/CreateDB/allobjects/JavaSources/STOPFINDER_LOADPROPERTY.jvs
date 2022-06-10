@@ -1,0 +1,91 @@
+Prompt Java Source STOPFINDER_LOADPROPERTY;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_LOADPROPERTY as package stopfinder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Properties;
+
+public class LoadProperty {
+	
+	private static LoadProperty instance = null;
+	private Properties props; 
+	private FileInputStream in;
+	private HashMap<String,String> property;
+	
+	/** Constructor LoadProperty */
+	private LoadProperty(){
+		
+		props = new Properties();
+		property = new HashMap<String,String>();
+		
+	}
+	
+	/**
+	 * This method returns the instance of the class.
+	 * @return instance of the class
+	 */
+	public static LoadProperty getInstance()
+	{
+		if (instance == null)
+		{
+			try
+			{
+				instance = new LoadProperty();					
+			}
+			catch(Exception e)
+			{
+                				
+				System.out.println(e.getStackTrace());
+			}		
+		}
+		return instance;
+	}
+	
+	/**
+	 * This method writes the properies for the application into into a hashmap. 
+	 * @param selectedFile property file config.ini
+	 * @return properties for the appliaction
+	 * @throws IOException 
+	 * @throws IOException
+	 */
+	public HashMap<String,String> loadPropertyFile(File selectedFile){	
+	
+				try {
+					in = new FileInputStream(selectedFile);
+					props.load(in);
+
+					property.put("file", selectedFile.toString());
+					property.put("eps",props.getProperty("eps"));
+					property.put("minTime",props.getProperty("minTime"));
+					property.put("delimiter",props.getProperty("delimiter"));
+					property.put("dataset",props.getProperty("dataset"));	
+					property.put("columns",props.getProperty("columns"));
+					property.put("numberColumns",props.getProperty("numberColumns"));
+					property.put("header",props.getProperty("header"));
+					property.put("cartesian",props.getProperty("cartesian"));
+					property.put("output",props.getProperty("output"));
+					property.put("outputStop",props.getProperty("outputStop"));
+					property.put("orderedList",props.getProperty("orderedList"));
+					property.put("alpha",props.getProperty("alpha"));
+					in.close();	
+                    System.out.println("config.ini loaded");
+					
+				} catch (FileNotFoundException e) {
+					System.out.println("file error");
+					System.out.println(e.getStackTrace());
+					
+				} catch (IOException e) {HashMap<String, String> runtimeVariable = LoadProperty.getInstance()
+					.loadPropertyFile(new File("config.ini")); //load property
+					System.out.println(e.getStackTrace());
+				}		
+		return property;		
+		
+	}
+
+}
+/
+
+

@@ -1,0 +1,135 @@
+Prompt Java Source STOPFINDER_ANGELRATE;
+CREATE OR REPLACE AND RESOLVE JAVA SOURCE NAMED STOPFINDER_ANGELRATE as package stopfinder;
+
+import stopfinder.CartesianPoint;
+import stopfinder.Line;
+
+public class AngelRate {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		/*
+		double a = 2;
+		double b = 3;
+		double c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+		double gamma = Math.PI/2;
+		double alpha;
+		double beta;
+		double degrBeta;
+		double degrAlpha;
+		
+		beta = b/c;
+		beta = beta * Math.sin(gamma);
+		beta = Math.asin(beta);
+		degrBeta = ((double) beta/Math.PI) * 180;
+		alpha = a/b;
+		alpha = alpha * Math.sin(beta);
+		alpha = Math.asin(alpha);
+		degrAlpha = ((double) alpha/Math.PI) * 180;
+		System.out.println(degrBeta + degrAlpha);
+		*/
+		
+		CartesianPoint a = new CartesianPoint(3,2);
+		CartesianPoint b = new CartesianPoint(2,3);
+		CartesianPoint c = new CartesianPoint(3,0);
+		Line ab = new Line(a,b);
+		Line bc = new Line(b,c);
+		double angel = 0;
+		
+		Line orthogonal = ab.getOrthogonal(b);
+		
+		
+		//System.out.println(ab.determineBiasAngle(orthogonal));
+		
+		
+		/*
+		 * everywhere behind the orthogonal of ab there is a degree greater than 90! 
+		 */
+		
+		
+		
+		if(ab.getSlope()>0) {
+			//positive slope
+			if(a.getX() < b.getX()) {
+				// ahead movement
+				if(orthogonal.getSideOfPoint(c) == false) {
+					// point is below the orthogonal
+					angel = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angel = ab.determineBiasAngle(bc);
+				}
+			}
+			else {
+				// backward movement
+				if(orthogonal.getSideOfPoint(c)) {
+					// point is below the orthogonal
+					angel = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angel = ab.determineBiasAngle(bc);
+				}
+			}
+		}
+		else if(ab.getSlope() == 0){
+			//0 slope a_x = b_x
+		}
+		
+		else {
+			//negative slope
+			if(a.getX()>b.getX()) {
+				// ahead movement
+				if(orthogonal.getSideOfPoint(c) == false) {
+					// point is below the orthogonal
+					angel = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angel = ab.determineBiasAngle(bc);
+				}
+			}
+			else {
+				// backward movement
+				if(orthogonal.getSideOfPoint(c)) {
+					// point is below the orthogonal
+					angel = 180 - ab.determineBiasAngle(bc);
+				}
+				else {
+					// point is above
+					angel = ab.determineBiasAngle(bc);
+				}
+			}
+		}
+		
+		/*
+		 *  if the new line goes still ahead, bias angel = angel rate
+		 *  if the new line goes backward, 180 - bias angel = angel rate
+		 *  if the algebraic sign differs, 180 - bias angel = angel rate
+		 *  TODO: Think about that!
+		 *  TODO: test of slope of ab = 0 and the two different directions of ab
+		 *  (ab could be from positive to negative oder from negative to positive) 
+		 */
+		
+		//Differ between positive or negative slope of ab
+		
+			
+		
+			
+			
+		
+		
+		
+		//System.out.println("y= " + ab.getSlope()+ "x + " + ab.getYintercept());
+		System.out.println("angel = " + angel);
+		
+
+	}
+
+}
+/
+
+
